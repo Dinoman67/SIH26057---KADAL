@@ -106,6 +106,14 @@ Evaluated strictly on independent, held-out side-scan sonar images (zero file ov
 * **MILCO Klein 3500 MCM Sonar** (64 test images): **0.2714 mAP50** (P: 70.7% — high precision prevents false mine alerts)
 * **Clean Seabed Validation**: **0 False Alarms** across natural seafloor sand ripples and mud textures.
 
+### Scope Notes: Coverage by Design
+
+**Statement fidelity (SIH26057).** The statement asks for shipwrecks, pipes, cylinders, and entangled debris nets, plus anomaly reporting with geotagging, across debris, MCM, and SAR threat types. Our four classes (`unknown_debris`, `mine`, `wreck`, `airplane`), together with the GeoTIFF→WGS84 solver and the PDF/CSV/JSON engine, map directly onto those clauses.
+
+**A note on ghost nets.** Ghost-net SSS detection is established science — e.g. GhostNetZero (Microsoft Research + WWF, 2025) reports ~90% detection from 412 expert-annotated Baltic/Puget Sound segments. That dataset is private, and no open student-usable ghost-net benchmark exists today. Our R&D decision: train on real survey acoustics only, using physics-preserving augmentation of real frames and no rendered objects (speckle/shadow statistics mismatch is documented to degrade real-survey transfer). Net-like contacts are therefore served through `unknown_debris`; a dedicated head becomes a fine-tune the day an open benchmark appears.
+
+**Reading our numbers.** Headline metrics are held-out test (962 images) with per-class and per-sensor breakdowns. See `reports/debris_feature_learning_report.md` for our frame-vs-pass generalization analysis.
+
 ---
 
 ## 📑 Automated Intelligence Reporting
