@@ -3,7 +3,7 @@ import uuid
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any, Tuple
 
 import cv2
 import numpy as np
@@ -23,7 +23,7 @@ from backend.inference.engine import YOLOESIInferenceEngine
 from backend.geospatial.metadata import extract_geospatial_metadata
 from backend.geospatial.coordinates import pixel_to_geographic
 from backend.utils.annotator import draw_annotations, generate_detection_only_view, apply_pseudo_colormap, generate_evidence_panel
-from backend.utils.file_validator import validate_and_save_upload
+from backend.utils.file_validator import validate_and_save_upload, validate_and_save_sidecars
 from backend.reports.pdf_report import create_pdf_report
 from backend.reports.csv_report import generate_csv_report
 from backend.reports.json_report import generate_json_report
@@ -218,7 +218,7 @@ def run_full_pipeline(
         inference_time_ms=timing["inference_time_ms"],
         total_time_ms=total_time_ms,
         status="SUCCESS",
-        message=f"Detected {total_dets} target(s): {', '.join(detected_types)}." if total_dets > 0 else "Clean seabed background — zero targets detected."
+        message=f"Detected {total_dets} target(s): {', '.join(detected_types)}." if total_dets > 0 else f"No targets above {conf_threshold:.0%} confidence — raise no alarm, or lower the threshold and re-analyze."
     )
 
 
@@ -296,12 +296,24 @@ def run_full_pipeline(
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_image(
     file: UploadFile = File(...),
+    sidecars: Optional[List[UploadFile]] = File(None),
     confidence_threshold: float = Form(DEFAULT_CONFIDENCE_THRESHOLD),
     iou_threshold: float = Form(DEFAULT_IOU_THRESHOLD),
     use_tiling: Optional[bool] = Form(None)
 ):
+    """
+    Analyzes an uploaded image. Optionally accepts georeferencing sidecar
+    files (world files .tfw/.jgw/.pgw/.wld, .prj, .aux.xml) under the
+    'sidecars' form field so plain PNG/JPG uploads resolve to real-world
+    coordinates. GeoTIFF-embedded transforms and EXIF GPS need no sidecars.
+    """
     saved_path, orig_name, file_size = validate_and_save_upload(file)
+    saved_sidecars: List[str] = []
     try:
+        if sidecars:
+            saved_sidecars = validate_and_save_sidecars(
+                sidecars, Path(saved_path).stem
+            )
         response = run_full_pipeline(
             image_path=saved_path,
             orig_filename=orig_name,
@@ -312,8 +324,10 @@ async def analyze_image(
         )
         return response
     finally:
-        # Cleanup uploaded raw temp file
+        # Cleanup uploaded raw temp file + sidecars
         Path(saved_path).unlink(missing_ok=True)
+        for sc_path in saved_sidecars:
+            Path(sc_path).unlink(missing_ok=True)
 
 class SampleRequest(BaseModel):
     sample_id: str

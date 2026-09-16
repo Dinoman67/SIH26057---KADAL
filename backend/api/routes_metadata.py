@@ -24,7 +24,7 @@ async def get_available_samples():
             "name": "NOAA SSS Debris Target (Sonar PNG)",
             "type": "High-Contrast Sonar PNG",
             "description": "512x512 side-scan sonar image with acoustic shadow and high-reflectivity marine debris target.",
-            "has_geolocation": False,
+            "has_geolocation": True,
             "filename": "sample_sss_marine_debris.png"
         },
         {
@@ -56,7 +56,7 @@ async def get_available_samples():
             "name": "Clean Seabed Background (No Targets)",
             "type": "Seabed Acoustic Texture",
             "description": "High-resolution side-scan sonar recording of natural seabed ripple textures without targets.",
-            "has_geolocation": False,
+            "has_geolocation": True,
             "filename": "sample_seabed_background.png"
         },
         {

@@ -63,13 +63,31 @@ class TestGeospatialPipeline(unittest.TestCase):
 
     def test_non_georeferenced_image(self):
         """Verify non-georeferenced image is correctly reported without fake coordinates."""
-        path = "backend/static/samples/sample_seabed_background.png"
-        meta = extract_geospatial_metadata(path, orig_filename="sample_seabed_background.png")
+        # MILCO/Kaggle survey PNGs have no parent-raster framework: must stay honest non-geo.
+        path = "backend/static/samples/sample_milco_mine.png"
+        meta = extract_geospatial_metadata(path, orig_filename="sample_milco_mine.png")
         self.assertFalse(meta["georeferenced"])
         self.assertIsNone(meta["crs"])
         self.assertIsNone(meta["transform"])
         self.assertIsNone(meta["bounds"])
         self.assertFalse(meta["lat_lon_available"])
+
+    def test_renamed_noaa_sample_alias(self):
+        """Verify renamed UI sample PNGs resolve via SAMPLE_GEO_ALIASES to exact windows."""
+        cases = {
+            "sample_sss_marine_debris.png": (28.9085, -89.4344),
+            "sample_seabed_background.png": (28.9165, -89.4358),
+        }
+        for filename, (exp_lat, exp_lon) in cases.items():
+            path = f"backend/static/samples/{filename}"
+            meta = extract_geospatial_metadata(path, orig_filename=filename)
+            self.assertTrue(meta["georeferenced"], filename)
+            self.assertIn("NOAA Survey Parent Raster Reconstruction", meta["coordinate_source"])
+            geo_det = pixel_to_geographic(256.0, 256.0, meta)
+            self.assertIsNotNone(geo_det, filename)
+            # Center pixel must land within ~50 m of the manifest target fix
+            self.assertAlmostEqual(geo_det["latitude"], exp_lat, places=3, msg=filename)
+            self.assertAlmostEqual(geo_det["longitude"], exp_lon, places=3, msg=filename)
 
     def test_exif_gps_image(self):
         """Verify EXIF GPS camera positioning without fabricating detection coordinates."""

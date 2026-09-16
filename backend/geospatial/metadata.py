@@ -36,6 +36,23 @@ NOAA_PARENT_TIFF_METADATA = {
     }
 }
 
+# Renamed UI sample assets → original survey manifest keys.
+# These are byte-identical copies (verified by file hash) of the crops listed
+# in datasets/noaa-debris/*/crop_metadata.csv, renamed for the demo UI.
+# Without this map, SOURCE 4 lookup misses and the samples fall through to
+# non-georeferenced. Only exact-window entries are listed here — never map a
+# sample to an approximate/different crop (that would fabricate coordinates).
+SAMPLE_GEO_ALIASES = {
+    "sample_sss_marine_debris.png": "E3_H11833_TGT014_0011.png",
+    "sample_seabed_background.png": "E3_H11833_BG_0017.png",
+    # SIH demo pack copies of the TGT012 test window (raw + pre-annotated
+    # renders). Same survey footprint as the manifest entry, so the same
+    # reconstruction is exact. (02/annotated_02 are E4-derived with no
+    # recorded window and stay honestly non-georeferenced.)
+    "01_debris_noaa_003553.png": "E3_H11833_TGT012_0001.png",
+    "annotated_01_debris_noaa_003553.png": "E3_H11833_TGT012_0001.png",
+}
+
 # Cache for NOAA survey patch geolocation records
 _NOAA_PATCH_CACHE: Optional[Dict[str, Dict[str, Any]]] = None
 
@@ -151,21 +168,21 @@ def _load_noaa_patch_manifest() -> Dict[str, Dict[str, Any]]:
                         cid = r.get("crop_id", "").strip()
                         src_tiff = r.get("source_tiff", "H11833_1of2.tif").strip()
                         tid = r.get("target_id", "").strip()
-                        target_data = None
-                        if tid:
-                            for k, v in manifest_map.items():
-                                if v.get("target_id") == tid and v.get("source_tiff") == src_tiff:
-                                    target_data = v
-                                    break
+                        # NOTE (anti-fabrication): E4 rows carry no per-crop window.
+                        # A different crop of the same target is NOT this crop:
+                        # borrowing its crop_x/crop_y would plant a wrong
+                        # footprint. E4 entries therefore resolve NO transform
+                        # and fall through to honest non-georeferenced unless a
+                        # verified window is registered in SAMPLE_GEO_WINDOWS.
                         data = {
                             "crop_id": cid,
                             "image_filename": f"{cid}.png",
                             "source_tiff": src_tiff,
                             "target_id": tid,
-                            "utm_x": target_data.get("utm_x") if target_data else None,
-                            "utm_y": target_data.get("utm_y") if target_data else None,
-                            "crop_x": target_data.get("crop_x") if target_data else None,
-                            "crop_y": target_data.get("crop_y") if target_data else None,
+                            "utm_x": None,
+                            "utm_y": None,
+                            "crop_x": None,
+                            "crop_y": None,
                             "crop_width": 512,
                             "crop_height": 512,
                         }
@@ -678,6 +695,13 @@ def extract_geospatial_metadata(
     match_pid = re.search(r'(H11833_\d+)', search_name, re.IGNORECASE)
     if match_pid:
         lookup_keys.append(match_pid.group(1).lower())
+
+    # Resolve renamed UI sample assets to their original manifest keys
+    for name_key in (path_obj.name.lower(), search_name.lower(), Path(search_name).stem.lower()):
+        alias = SAMPLE_GEO_ALIASES.get(name_key)
+        if alias:
+            lookup_keys.extend([alias.lower(), Path(alias).stem.lower()])
+            break
 
     patch_entry = None
     for k in lookup_keys:

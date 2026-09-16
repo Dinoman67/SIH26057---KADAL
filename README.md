@@ -170,6 +170,12 @@ To run live GPU/CPU ONNX tensor inference:
    ```
 2. Restart the app (`./start.sh`). The backend will automatically bind the model and display execution provider details (`CUDAExecutionProvider` or `CPUExecutionProvider`).
 
+### 3. Uploads With Geolocation
+`POST /api/analyze` auto-resolves real-world coordinates, no model changes needed:
+* **GeoTIFF** (embedded transform/CRS) and **EXIF-GPS JPGs** work out of the box.
+* Plain PNG/JPG + georeferencing sidecars (`.tfw`, `.jgw`, `.pgw`, `.wld`, `.prj`, `.aux.xml`) via the optional `sidecars` form field.
+* Detections from files with no survey metadata return pixel boxes with an explicit non-georeferenced status — coordinates are never fabricated.
+
 ---
 
 ## 📂 Repository Layout
