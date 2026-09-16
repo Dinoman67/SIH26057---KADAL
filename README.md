@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SIH 2026](https://img.shields.io/badge/Smart_India_Hackathon-2026-orange)](https://www.sih.gov.in/)
 
-**Smart India Hackathon 2026 | Problem Statement: SIH26215**  
+**Smart India Hackathon 2026 | Problem Statement: SIH26057 (Ministry of Earth Sciences / NIOT)**  
 *Real-time AI for Marine Debris, Naval Mine Countermeasures (MCM), Shipwrecks, and Submerged Aircraft Localization in Side-Scan Sonar (SSS) Imagery.*
 
 [Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [Live Demo](#-quick-start) • [Architecture](#-solution-yolov8-esi-architecture) • [Benchmarks](#-empirical-benchmarks) • [Report Engine](#-automated-intelligence-reporting) • [Pitch Guide](#-sih-2026-hackathon-pitch-flow)
@@ -27,7 +27,7 @@ Underwater marine debris, lost cargo containers, unexploded naval mines, and sub
 
 Standard computer vision models (COCO-trained YOLOv8, Faster R-CNN) fail catastrophically on sonar:
 * 🌑 **No Color Information**: Sonar outputs single-channel acoustic backscatter intensity.
-* 🌓 **Acoustic Shadow Physics**: Objects are characterized not just by bright highlights, but by the **accoustic shadows** cast directly behind them based on towfish altitude and sound grazing angle.
+* 🌓 **Acoustic Shadow Physics**: Objects are characterized not just by bright highlights, but by the **acoustic shadows** cast directly behind them based on towfish altitude and sound grazing angle.
 * 🌊 **Speckle Noise & Clutter**: Natural sand ripples, seafloor mud, and rocky reefs produce intense false alarms for brightness-dependent detectors.
 * ⏱️ **Manual Review Bottleneck**: Surveyors spend days reviewing multi-gigabyte continuous waterfall records.
 
@@ -65,7 +65,7 @@ Standard computer vision models (COCO-trained YOLOv8, Faster R-CNN) fail catastr
 ### Key Architectural Advantages
 1. **Highlight-Shadow Coupling**: Channel attention forces the network to only trigger when an acoustic highlight is spatially correlated with a corresponding acoustic shadow.
 2. **Compact Edge Footprint**: Only **3.03M parameters** and **5.9 MB** (FP16 ONNX), requiring zero high-end marine GPUs.
-3. **Ultra-Low Latency**: **2.1 ms** on NVIDIA GPUs, **~18 ms** on standard CPU/Raspberry Pi 4/5—easily outpacing 30+ FPS hydrographic survey feeds.
+3. **Ultra-Low Latency**: **~2.4 ms** on NVIDIA GPUs, **<45 ms** on edge ARM CPUs (single-pass 256×256; tiled inference on large surveys is slower — see `backend/inference/engine.py`).
 
 ---
 
@@ -73,31 +73,32 @@ Standard computer vision models (COCO-trained YOLOv8, Faster R-CNN) fail catastr
 
 To provide maximum operational flexibility for maritime authorities and environmental teams, SonarVision supports a two-model strategy:
 
-| Component | Model 1: Debris Specialist | Model 2: Multi-Sensor Target Classifier |
+| Component | Model 1: Debris Specialist (deprecated reference) | Model 2: Multi-Sensor Target Classifier (production champion) |
 | :--- | :--- | :--- |
 | **Model Type** | YOLOv8-ESI Single-Class | YOLOv8-ESI 4-Class Multi-Source |
-| **Classes** | `marine_debris` | `unknown_debris`, `naval_mine`, `shipwreck`, `airplane` |
+| **Classes** | `marine_debris` | `unknown_debris`, `airplane`, `mine`, `wreck` |
 | **Primary Domain** | High-density coastal cleanup & plastic mapping | Naval MCM, port security, maritime SAR & salvage |
-| **mAP50 Score** | **0.88 – 0.92** on NOAA survey passes | **0.6042** across 962 unseen multi-sensor test images |
+| **mAP50 Score** | **0.8837 (leaked — test passes seen in train; reference only, do not deploy)** | **0.6042** across 962 unseen multi-sensor test images |
 | **Runtime Size** | 6.2 MB (FP16 ONNX) | 5.9 MB (FP16 ONNX) |
-| **Deployment** | Autonomous surface vessels (USVs) & micro-drones | Survey ships, Naval AUVs, coastal defense command |
+| **Deployment** | Archived reference only | Survey ships, Naval AUVs, coastal defense command |
 
 ---
 
 ## 📊 Empirical Benchmarks
 
-### Unseen Test Split (962 Images, Zero Split Leakage)
+### Unseen Test Split (962 Images, Zero File Overlap)
 
-Evaluated strictly on independent, unseen side-scan sonar passes:
+Evaluated strictly on independent, held-out side-scan sonar images (zero file overlap across splits; debris train/test share survey passes — see `reports/debris_feature_learning_report.md` for pass-level analysis):
 
 | Object Type / Class | Benchmark Target | Baseline YOLO | **SonarVision YOLOv8-ESI** | Detection Precision | Recall |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Marine Debris** (`unknown_debris`) | $\ge 0.10$ | 0.0005 | **0.8185** | **81.9%** | **78.7%** |
 | **Naval Mine** (`mine`) | $\ge 0.30$ | 0.1833 | **0.3862** | **70.7%** | **29.6%** |
 | **Shipwreck** (`wreck`) | $\ge 0.70$ | 0.6698 | **0.7173** | **80.0%** | **60.4%** |
-| **Submerged Aircraft** (`airplane`) | $\ge 0.70$ | 0.6206 | **0.4950** *(Val: 0.654)* | **75.4%** | **52.1%** |
+| **Submerged Aircraft** (`airplane`) | $\ge 0.70$ | 0.6206 | **0.4950** *(Val: 0.654)* | **57.2%** | **69.2%** |
 | **Overall Model mAP50** | $\ge 0.50$ | 0.3685 | **0.6042** | **66.9%** | **62.4%** |
-| **Peak F1 Score** | $\ge 0.60$ | 0.5100 | **0.6502** (@ conf 0.40) | — | — |
+| **Peak F1 Score** | $\ge 0.60$ | 0.5100 | **0.6454** (@ conf 0.40) | — | — |
+| **mAP50-95 (localization)** | — | — | **0.3348** | — | — |
 
 ### Multi-Sensor Cross-Validation
 * **NOAA Klein 5000 SSS** (833 test images): **0.7578 mAP50** (P: 81.9%, R: 78.7%, F1: 0.8025)
@@ -124,7 +125,7 @@ To download the trained production model weights or access the acoustic side-sca
 
 | Resource | Hugging Face Repository | Description & Contents |
 | :--- | :--- | :--- |
-| **Model Weights (v6)** | [🤗 `Dinoman1221/sonarvision-yolov8-esi-v6`](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) | **YOLOv8-ESI v6 ONNX models** (`yolo_esi_v6_fp16.onnx` @ 5.9 MB, `yolo_esi_v6_fp32.onnx` @ 12 MB, and `yolo_esi_core_debris_fp16.onnx` @ 6.2 MB), model cards with test benchmarks, and standalone ONNX inference code. |
+| **Model Weights (v6)** | [🤗 `Dinoman1221/sonarvision-yolov8-esi-v6`](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) | **YOLOv8-ESI v6 ONNX models** (`yolo_esi_v6_fp16.onnx` @ 5.9 MB, `yolo_esi_v6_fp32.onnx` @ 11.67 MB, and `yolo_esi_core_debris_fp16.onnx` @ 6.2 MB — leaked reference only), model cards with test benchmarks, and standalone ONNX inference code. |
 | **Multi-Source Dataset (v6)** | [🤗 `Dinoman1221/sonarvision-multisource-v6`](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) | **924 MB archive** containing **5,558 side-scan sonar images** (4,033 train, 563 val, 962 strictly held-out test), `dataset.yaml`, 4 tactical target classes, and zero-leakage split protocol. |
 
 ### CLI Download Commands:
