@@ -12,9 +12,13 @@ help:
 	@echo "  make test       - Run backend test suite"
 	@echo "  make clean      - Remove build artifacts and temporary cache files"
 
-install:
-	pip install -r requirements.txt
+install: .venv/bin/python
 	cd frontend && npm install
+
+.venv/bin/python:
+	python3 -m venv .venv
+	.venv/bin/pip install --upgrade pip
+	.venv/bin/pip install -r requirements.txt
 
 build:
 	cd frontend && npm install && npm run build
@@ -25,8 +29,8 @@ run start:
 dev:
 	./start.sh --dev
 
-test:
-	pytest tests/
+test: .venv/bin/python
+	.venv/bin/python -m pytest tests/ -q
 
 clean:
 	rm -rf frontend/dist frontend/node_modules/.vite

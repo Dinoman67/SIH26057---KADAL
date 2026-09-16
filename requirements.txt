@@ -24,3 +24,12 @@ pyproj>=3.5.0
 
 # Reporting & Export
 reportlab>=4.0.0
+
+# Hub access (hf download CLI for model weights / datasets)
+huggingface_hub>=0.34.0
+
+# Testing
+pytest>=8.0.0
+
+# Dataset / analysis scripts
+scipy>=1.10.0

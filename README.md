@@ -143,11 +143,21 @@ hf download Dinoman1221/sonarvision-multisource-v6 sonarvision_multisource_v6.zi
 
 ### 1. Clone & Run (One-Command Startup)
 
+Prerequisites: **Python 3.10+** and **Node.js 20+** (`node --version`). No manual setup beyond that:
+
 ```bash
 git clone https://github.com/Dinoman67/sonarvision.git
 cd sonarvision
 
 # Launch unified application (FastAPI backend + React frontend)
+./start.sh
+```
+`start.sh` automatically creates `.venv`, installs Python dependencies, builds the
+frontend, and starts the server. For real (non-simulated) detections, download weights once:
+
+```bash
+.venv/bin/hf download Dinoman1221/sonarvision-yolov8-esi-v6 yolo_esi_v6_fp16.onnx --local-dir models/
+cp models/yolo_esi_v6_fp16.onnx models/yolo_esi_fp16.onnx
 ./start.sh
 ```
 
