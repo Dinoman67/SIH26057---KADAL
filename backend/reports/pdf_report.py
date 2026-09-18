@@ -228,9 +228,9 @@ def create_pdf_report(
             pass
 
     # 5. Detection Summary Table
-    story.append(Paragraph("3. Target Detection Inventory", section_heading_style))
+    story.append(Paragraph("3. Target Detection & Acoustic Mensuration Inventory", section_heading_style))
     
-    det_headers = ["ID", "Object Type (Class)", "Confidence", "Pixel Bounds [X1, Y1, X2, Y2]", "Center (X, Y)", "Latitude", "Longitude"]
+    det_headers = ["ID", "Object / Acoustic Material", "Confidence", "Est Height", "Pixel Bounds [X1, Y1, X2, Y2]", "Latitude", "Longitude"]
     det_table_data = [[Paragraph(f"<b>{h}</b>", body_style) for h in det_headers]]
 
     if len(detections) == 0:
@@ -252,21 +252,26 @@ def create_pdf_report(
             obj_type = det.get("object_type") or mapping.get(str(cname).lower(), str(cname).replace("_", " ").title())
             
             box_str = f"[{box.get('x1', 0):.0f}, {box.get('y1', 0):.0f}, {box.get('x2', 0):.0f}, {box.get('y2', 0):.0f}]"
-            center_str = f"({cp.get('x', 0):.0f}, {cp.get('y', 0):.0f})"
             lat_str = f"{geo.get('latitude'):.6f}°" if geo.get('latitude') is not None else "N/A"
             lon_str = f"{geo.get('longitude'):.6f}°" if geo.get('longitude') is not None else "N/A"
 
+            mat_str = det.get("material_density") or "Unclassified"
+            h_val = det.get("estimated_height_meters")
+            h_str = f"{h_val:.2f} m" if (h_val is not None and h_val > 0) else "—"
+            p95_val = det.get("peak_backscatter_p95")
+            p95_sub = f"<br/><font size='6.5' color='#64748b'>Backscatter P95: {p95_val:.0f}/255</font>" if p95_val is not None else ""
+
             det_table_data.append([
                 Paragraph(f"#{det.get('id'):02d}", body_style),
-                Paragraph(f"<b>{obj_type}</b><br/><font size='7' color='#64748b'>({cname})</font>", body_style),
+                Paragraph(f"<b>{obj_type}</b><br/><font size='7' color='#0284c7'><b>{mat_str}</b></font>{p95_sub}", body_style),
                 Paragraph(f"<b>{det.get('confidence', 0)*100:.1f}%</b>", body_style),
+                Paragraph(f"<b>{h_str}</b>", highlight_style),
                 Paragraph(box_str, body_style),
-                Paragraph(center_str, body_style),
                 Paragraph(lat_str, body_style),
                 Paragraph(lon_str, body_style),
             ])
 
-    t_dets = Table(det_table_data, colWidths=[28, 112, 55, 135, 70, 70, 70])
+    t_dets = Table(det_table_data, colWidths=[26, 134, 48, 52, 110, 85, 85])
     t_dets.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0284c7')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
@@ -282,11 +287,16 @@ def create_pdf_report(
     # 6. Technical Interpretation
     story.append(Paragraph("4. Technical Interpretation & Assessment", section_heading_style))
     if total_dets > 0:
+        mat_counts = summary.get("material_counts", {})
+        mat_desc_list = [f"<b>{m}</b>: {c}" for m, c in mat_counts.items()]
+        mat_desc_str = ", ".join(mat_desc_list) if mat_desc_list else "Standard Acoustic Backscatter"
+
         interp_text = (
             f"The YOLOv8-ESI multi-sensor acoustic detector evaluated the input scene '{file_meta.get('filename')}' "
             f"using spatial-aware Squeeze-and-Excitation channel attention. A total of <b>{total_dets}</b> target(s) were "
             f"classified into the following object types: <b>{breakdown_str}</b> (maximum confidence: <b>{max_conf*100:.1f}%</b>). "
-            f"Targets were localized via prominent acoustic backscatter highlights and correlated shadow signatures."
+            f"Acoustic physics analysis classified target material density based on 95th-percentile backscatter reflectivity (Z=rho*c): "
+            f"{mat_desc_str}. Target vertical relief was calculated using hydrographic acoustic shadow mensuration geometry."
         )
     else:
         interp_text = (

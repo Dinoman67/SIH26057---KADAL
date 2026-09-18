@@ -12,11 +12,11 @@
 from pathlib import Path
 from ultralytics import YOLO
 
-ROOT = Path('/home/ashish/sonar-vision')
+ROOT = Path(__file__).resolve().parent.parent
 V5 = ROOT / 'datasets/sonarvision_multisource_v5'
 UNSEEN = ROOT / 'datasets/noaa-debris/h8_unseen_test'
 OUT = ROOT / 'mock_runs'
-ONNX = '/home/ashish/sonar-vision/hf_yolo_esi_model/yolo_esi_fp32.onnx'
+ONNX = str(ROOT / 'hf_yolo_esi_model/yolo_esi_fp32.onnx')
 
 # 1) h8_unseen_test as-is (nc=1, names marine_debris)
 print('MODEL: Core_model single-class fp32 ONNX')

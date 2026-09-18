@@ -135,6 +135,40 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ analysis }) => {
           </p>
         )}
       </div>
+
+      {/* Acoustic Material Density Breakdown */}
+      {summary.material_counts && Object.keys(summary.material_counts).length > 0 && (
+        <div className="bg-slate-950/40 border border-slate-800/80 rounded p-2.5 flex flex-col gap-2">
+          <div className="flex items-center justify-between text-[11px] text-slate-400 border-b border-slate-800/60 pb-1">
+            <span className="flex items-center gap-1 font-semibold text-slate-200">
+              <ShieldCheck className="h-3 w-3 text-amber-400" />
+              Acoustic Material Density
+            </span>
+            <span className="text-slate-500">Count</span>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            {Object.entries(summary.material_counts).map(([mat, count]) => {
+              const isMetal = mat.includes('Hard') || mat.includes('Metallic');
+              const pct = summary.total_detections > 0 ? (count / summary.total_detections) * 100 : 0;
+              return (
+                <div key={mat} className="flex flex-col gap-0.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-300 text-[11px]">{mat}</span>
+                    <span className={`font-bold ${isMetal ? 'text-amber-300' : 'text-cyan-300'}`}>{count}</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${isMetal ? 'bg-amber-400' : 'bg-cyan-400'}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

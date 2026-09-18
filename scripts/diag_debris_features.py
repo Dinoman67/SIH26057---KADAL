@@ -41,7 +41,7 @@ class C2fWithSE(nn.Module):
     def forward(self, x):
         return self.se(self.c2f(x))
 
-ROOT = Path('/home/ashish/sonar-vision')
+ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'mock_runs'
 NOAA_YAML = OUT / 'noaa_test_nc1/data.yaml'   # nc=1, v5 NOAA test (built read-only earlier)
 UNSEEN_YAML = ROOT / 'datasets/noaa-debris/h8_unseen_test/data.yaml'

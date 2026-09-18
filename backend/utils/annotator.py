@@ -68,7 +68,16 @@ def draw_annotations(
         cv2.circle(annotated, (cx, cy), max(2, int(2 * scale_factor)), COLOR_ACCENT, -1)
 
         # Label badge
-        label_text = f"[ID {det_id:02d}] {cname} {conf * 100:.1f}%"
+        mat_label = det.get("material_density", "")
+        h_m = det.get("estimated_height_meters")
+        label_parts = [f"[ID {det_id:02d}] {cname} {conf * 100:.1f}%"]
+        if mat_label:
+            short_mat = "Metal" if ("Hard" in mat_label or "Metal" in mat_label) else "Synthetic"
+            label_parts.append(short_mat)
+        if h_m is not None and h_m > 0:
+            label_parts.append(f"H:{h_m:.1f}m")
+        label_text = " | ".join(label_parts)
+
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = max(0.4, 0.45 * scale_factor)
         font_thick = max(1, int(round(1 * scale_factor)))
@@ -81,9 +90,10 @@ def draw_annotations(
         badge_x1 = x1
         badge_x2 = min(w, x1 + tw + 10)
 
-        # Draw filled background pill for label
+        # Draw filled background pill for label (highlight border color based on material)
+        badge_border_color = (0, 215, 255) if ("Metal" in label_text) else COLOR_PRIMARY
         cv2.rectangle(annotated, (badge_x1, badge_y1), (badge_x2, badge_y2), COLOR_BG, -1)
-        cv2.rectangle(annotated, (badge_x1, badge_y1), (badge_x2, badge_y2), COLOR_PRIMARY, 1)
+        cv2.rectangle(annotated, (badge_x1, badge_y1), (badge_x2, badge_y2), badge_border_color, 1)
 
         # Draw text
         text_pos = (badge_x1 + 5, badge_y2 - 5)

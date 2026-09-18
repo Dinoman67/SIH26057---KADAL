@@ -19,7 +19,7 @@ from ultralytics.nn.modules.block import C2f
 from ultralytics.nn.tasks import DetectionModel
 from ultralytics.models.yolo.detect.train import DetectionTrainer
 
-ROOT = Path('/home/ashish/sonar-vision')
+ROOT = Path(__file__).resolve().parent.parent
 DATA_YAML = ROOT / 'datasets/sonarvision_multisource_v6/dataset.yaml'
 OUT = ROOT / 'mock_runs'
 OUT.mkdir(exist_ok=True)

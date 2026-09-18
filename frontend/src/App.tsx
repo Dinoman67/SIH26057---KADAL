@@ -171,6 +171,9 @@ export function App() {
               selectedDetectionId={selectedDetectionId}
               onHoverDetection={setHoveredDetectionId}
               onSelectDetection={setSelectedDetectionId}
+              analysisId={analysis?.analysis_id}
+              nmeaExportUrl={analysis?.nmea_export_url}
+              kmlExportUrl={analysis?.kml_export_url}
             />
           </div>
 

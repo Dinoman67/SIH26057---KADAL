@@ -11,7 +11,7 @@ import os, csv, shutil
 
 from ultralytics import YOLO
 
-ROOT = Path('/home/ashish/sonar-vision')
+ROOT = Path(__file__).resolve().parent.parent
 V5 = ROOT / 'datasets/sonarvision_multisource_v5'
 UNSEEN = ROOT / 'datasets/noaa-debris/h8_unseen_test'
 OUT = ROOT / 'mock_runs'

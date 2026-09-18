@@ -53,7 +53,7 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({
             Imagery Ingestion
           </span>
         </div>
-        <span className="text-[11px] text-slate-500 font-mono">TIFF • JPG • PNG</span>
+        <span className="text-[11px] text-slate-500 font-mono">TIFF • XTF • JPG • PNG</span>
       </div>
 
       {/* Drag & Drop Upload Target */}
@@ -72,7 +72,7 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          accept=".tif,.tiff,.jpg,.jpeg,.png"
+          accept=".tif,.tiff,.xtf,.jpg,.jpeg,.png"
           className="hidden"
         />
         <div className="flex flex-col items-center gap-2">
@@ -81,13 +81,14 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-200">
-              Drop aerial / sonar imagery here
+              Drop aerial / sonar imagery or XTF here
             </p>
             <p className="text-[11px] text-slate-500 mt-0.5">
               or <span className="text-cyan-400 underline underline-offset-2">browse filesystem</span>
             </p>
           </div>
-          <div className="flex items-center gap-1.5 mt-1">
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap justify-center">
+            <span className="px-1.5 py-0.5 rounded bg-cyan-950/60 text-[10px] text-cyan-300 font-mono border border-cyan-800">XTF Sonar</span>
             <span className="px-1.5 py-0.5 rounded bg-slate-800/80 text-[10px] text-slate-400 font-mono border border-slate-700">GeoTIFF</span>
             <span className="px-1.5 py-0.5 rounded bg-slate-800/80 text-[10px] text-slate-400 font-mono border border-slate-700">TIFF</span>
             <span className="px-1.5 py-0.5 rounded bg-slate-800/80 text-[10px] text-slate-400 font-mono border border-slate-700">JPG</span>

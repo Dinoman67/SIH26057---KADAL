@@ -21,12 +21,13 @@ import zipfile, io, csv, shutil, sys, yaml
 from pathlib import Path
 from collections import Counter
 
-ROOT = Path('/home/ashish/sonar-vision')
+ROOT = Path(__file__).resolve().parent.parent
 DST = ROOT / 'datasets' / 'sonarvision_debris_honest_v1'
 
-H8_ZIP = Path('/home/ashish/Downloads/h8.zip')
-V5_ZIP = Path('/home/ashish/Downloads/sonarvision_multisource_v5.zip')
-UNSEEN_ZIP = Path('/home/ashish/Downloads/h8_unseen_test.zip')
+DOWNLOADS = Path.home() / 'Downloads'
+H8_ZIP = DOWNLOADS / 'h8.zip'
+V5_ZIP = DOWNLOADS / 'sonarvision_multisource_v5.zip'
+UNSEEN_ZIP = DOWNLOADS / 'h8_unseen_test.zip'
 
 
 def pass_key(orig):

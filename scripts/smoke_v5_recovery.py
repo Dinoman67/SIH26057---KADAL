@@ -13,7 +13,7 @@ Stage2 continuation (0 missing/0 unexpected) -> Stage2 backup -> Cell 6 winner e
 import ast, re, sys, os, shutil, textwrap
 from pathlib import Path
 
-ROOT = Path('/home/ashish/sonar-vision')
+ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / 'scripts/colab_train_v5_drive.py'
 DS = ROOT / 'datasets/sonarvision_multisource_v5'
 SMOKE = ROOT / 'mock_runs/smoke_v5_recovery'

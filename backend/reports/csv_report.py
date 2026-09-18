@@ -15,10 +15,15 @@ def generate_csv_report(
     # Header
     writer.writerow([
         "detection_id",
+        "threat_score",
         "object_type",
         "class_name",
         "class_id",
         "confidence",
+        "material_density",
+        "peak_backscatter_p95",
+        "estimated_height_meters",
+        "shadow_length_meters",
         "x1",
         "y1",
         "x2",
@@ -48,10 +53,15 @@ def generate_csv_report(
 
         writer.writerow([
             det.get("id"),
+            det.get("threat_score", 0),
             obj_type,
             det.get("class_name"),
             det.get("class_id"),
             f"{det.get('confidence', 0.0):.4f}",
+            det.get("material_density", ""),
+            f"{det.get('peak_backscatter_p95', 0.0):.1f}" if det.get("peak_backscatter_p95") is not None else "",
+            f"{det.get('estimated_height_meters', 0.0):.2f}" if det.get("estimated_height_meters") is not None else "",
+            f"{det.get('shadow_length_meters', 0.0):.2f}" if det.get("shadow_length_meters") is not None else "",
             box.get("x1"),
             box.get("y1"),
             box.get("x2"),

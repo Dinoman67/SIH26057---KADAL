@@ -46,7 +46,10 @@ MODEL_INPUT_SIZE = (256, 256)
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
 MAX_UPLOAD_SIZE_MB = int(os.getenv("MAX_UPLOAD_SIZE_MB", "150"))
-ALLOWED_EXTENSIONS = {".tif", ".tiff", ".jpg", ".jpeg", ".png"}
+ALLOWED_EXTENSIONS = {".tif", ".tiff", ".jpg", ".jpeg", ".png", ".xtf"}
+
+# Acoustic Physics Constants
+P95_METALLIC_THRESHOLD = 185.0
 
 MODEL_CLASSES = {
     0: "unknown_debris",

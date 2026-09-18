@@ -303,8 +303,32 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             <div className="border-t border-slate-800 px-3 py-2.5 font-mono text-[11px] space-y-1.5">
               <div className="flex justify-between">
                 <span className="text-slate-500">Class</span>
-                <span className="text-slate-200">{selectedDetection.class_name}</span>
+                <span className="text-slate-200 capitalize">{selectedDetection.class_name.replace('_', ' ')}</span>
               </div>
+              {selectedDetection.material_density && (
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Material</span>
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                    selectedDetection.material_density.includes('Hard') || selectedDetection.material_density.includes('Metallic')
+                      ? 'bg-amber-950/80 text-amber-300 border-amber-700/80'
+                      : 'bg-cyan-950/80 text-cyan-300 border-cyan-700/80'
+                  }`}>
+                    {selectedDetection.material_density}
+                  </span>
+                </div>
+              )}
+              {selectedDetection.peak_backscatter_p95 !== undefined && selectedDetection.peak_backscatter_p95 !== null && (
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Backscatter P95</span>
+                  <span className="text-cyan-300 font-bold">{selectedDetection.peak_backscatter_p95.toFixed(1)} / 255</span>
+                </div>
+              )}
+              {selectedDetection.estimated_height_meters !== undefined && selectedDetection.estimated_height_meters !== null && (
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Est. Height</span>
+                  <span className="text-amber-400 font-bold">{selectedDetection.estimated_height_meters.toFixed(2)} m</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-slate-500">Confidence</span>
                 <span className="text-emerald-400 font-bold">

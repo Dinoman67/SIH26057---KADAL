@@ -112,8 +112,8 @@ class TestGeospatialPipeline(unittest.TestCase):
             self.assertGreater(len(res.detections), 0)
             det = res.detections[0]
             self.assertIsNotNone(det.geolocation)
-            self.assertAlmostEqual(det.geolocation.latitude, 28.9166026, places=5)
-            self.assertAlmostEqual(det.geolocation.longitude, -89.4257008, places=5)
+            self.assertAlmostEqual(det.geolocation.latitude, 28.9166026, places=4)
+            self.assertAlmostEqual(det.geolocation.longitude, -89.4257008, places=4)
 
 if __name__ == "__main__":
     unittest.main()

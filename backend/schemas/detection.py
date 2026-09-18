@@ -28,6 +28,11 @@ class DetectionRecord(BaseModel):
     bbox: BoundingBox = Field(..., description="Detection bounding box in pixel space")
     center_pixel: CenterPixel = Field(..., description="Center point in pixel space")
     geolocation: Optional[Geolocation] = Field(None, description="Geographic coordinates if georeferenced")
+    material_density: Optional[str] = Field(None, description="Classified material density: 'Hard (Metallic)' vs 'Soft (Synthetic/Plastic)'")
+    estimated_height_meters: Optional[float] = Field(None, description="Hydrographic target mensuration height in meters")
+    peak_backscatter_p95: Optional[float] = Field(None, description="95th percentile acoustic backscatter intensity [0-255]")
+    shadow_length_meters: Optional[float] = Field(None, description="Acoustic shadow length in meters")
+    threat_score: int = Field(default=0, description="Automated C2 threat score [0-100] based on material density, relief height, and confidence")
 
 class FileMetadata(BaseModel):
     filename: str
@@ -51,6 +56,8 @@ class GeospatialMetadata(BaseModel):
     camera_altitude: Optional[float] = None
     capture_direction: Optional[float] = None
     footprint_geojson: Optional[Dict[str, Any]] = None
+    towfish_altitude_m: Optional[float] = None
+    slant_range_corrected: Optional[bool] = None
 
 class ModelMetadata(BaseModel):
     model_name: str = "YOLOv8-ESI"
@@ -69,6 +76,7 @@ class AnalysisSummary(BaseModel):
     highest_confidence: Optional[float] = None
     average_confidence: Optional[float] = None
     class_counts: Dict[str, int] = Field(default_factory=dict)
+    material_counts: Dict[str, int] = Field(default_factory=dict, description="Distribution of detected materials (Metallic vs Synthetic)")
     detected_object_types: List[str] = Field(default_factory=list, description="Human-readable object types detected")
     primary_object_type: Optional[str] = Field(None, description="Primary detected object type")
     inference_time_ms: float
@@ -93,3 +101,5 @@ class AnalysisResponse(BaseModel):
     csv_export_url: str
     json_export_url: str
     pdf_report_url: str
+    nmea_export_url: Optional[str] = None
+    kml_export_url: Optional[str] = None

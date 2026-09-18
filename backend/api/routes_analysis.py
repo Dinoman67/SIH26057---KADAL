@@ -20,6 +20,7 @@ from backend.config import (
     DEFAULT_IOU_THRESHOLD
 )
 from backend.inference.engine import YOLOESIInferenceEngine
+from backend.inference.xtf_parser import parse_xtf_file
 from backend.geospatial.metadata import extract_geospatial_metadata
 from backend.geospatial.coordinates import pixel_to_geographic
 from backend.utils.annotator import draw_annotations, generate_detection_only_view, apply_pseudo_colormap, generate_evidence_panel
@@ -27,6 +28,8 @@ from backend.utils.file_validator import validate_and_save_upload, validate_and_
 from backend.reports.pdf_report import create_pdf_report
 from backend.reports.csv_report import generate_csv_report
 from backend.reports.json_report import generate_json_report
+from backend.reports.nmea_export import generate_nmea_export
+from backend.reports.kml_export import generate_kml_export
 from backend.schemas.detection import (
     AnalysisResponse, AnalysisSummary, DetectionRecord, FileMetadata,
     GeospatialMetadata, ModelMetadata, BoundingBox, CenterPixel, Geolocation
@@ -42,12 +45,29 @@ def format_file_size(size_bytes: int) -> str:
     else:
         return f"{size_bytes / (1024 * 1024):.2f} MB"
 
-def load_image_to_numpy(image_path: str) -> Tuple[np.ndarray, int, int, int]:
+def load_image_to_numpy(image_path: str) -> Tuple[np.ndarray, np.ndarray, int, int, int, Optional[Dict[str, Any]]]:
     """
-    Safely loads TIFF, GeoTIFF, JPG, PNG into uint8 BGR numpy array.
+    Safely loads TIFF, GeoTIFF, XTF, JPG, PNG into uint8 BGR numpy array and preserves
+    the un-letterboxed, raw acoustic grayscale numpy array for acoustic physics backscatter analysis.
+    Returns: (img_bgr, raw_gray, width, height, channels, xtf_telemetry)
     """
     path = str(image_path)
     ext = Path(path).suffix.lower()
+
+    # Native eXtended Triton Format (.XTF) ingestion
+    if ext == ".xtf":
+        try:
+            xtf_data = parse_xtf_file(path, apply_slant_correction=True)
+            return (
+                xtf_data["img_bgr"],
+                xtf_data["raw_gray"],
+                xtf_data["width"],
+                xtf_data["height"],
+                xtf_data["channels"],
+                xtf_data
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to ingest raw .XTF sonar file: {e}")
 
     if ext in [".tif", ".tiff"]:
         try:
@@ -56,25 +76,29 @@ def load_image_to_numpy(image_path: str) -> Tuple[np.ndarray, int, int, int]:
                 if src.count >= 3:
                     arr = src.read([1, 2, 3])
                     arr = np.transpose(arr, (1, 2, 0)) # H, W, 3
+                    raw_gray = np.dot(arr[..., :3], [0.114, 0.587, 0.299]).astype(np.float32)
                 else:
                     arr = src.read(1) # H, W
+                    raw_gray = arr.astype(np.float32)
                 
-                # Normalize if 16-bit or float
+                # Normalize for BGR visualization & neural inference
                 if arr.dtype != np.uint8:
                     min_v, max_v = arr.min(), arr.max()
                     if max_v > min_v:
-                        arr = ((arr - min_v) / (max_v - min_v) * 255.0).astype(np.uint8)
+                        arr_norm = ((arr - min_v) / (max_v - min_v) * 255.0).astype(np.uint8)
                     else:
-                        arr = arr.astype(np.uint8)
-
-                if len(arr.shape) == 2:
-                    bgr = cv2.cvtColor(arr, cv2.COLOR_GRAY2BGR)
+                        arr_norm = arr.astype(np.uint8)
                 else:
-                    bgr = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+                    arr_norm = arr.copy()
+
+                if len(arr_norm.shape) == 2:
+                    bgr = cv2.cvtColor(arr_norm, cv2.COLOR_GRAY2BGR)
+                else:
+                    bgr = cv2.cvtColor(arr_norm, cv2.COLOR_RGB2BGR)
                     
                 h, w = bgr.shape[:2]
                 channels = 3
-                return bgr, w, h, channels
+                return bgr, raw_gray, w, h, channels, None
         except Exception:
             pass
 
@@ -90,14 +114,18 @@ def load_image_to_numpy(image_path: str) -> Tuple[np.ndarray, int, int, int]:
     if len(img.shape) == 2:
         h, w = img.shape
         channels = 1
+        raw_gray = img.copy().astype(np.float32)
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     else:
         h, w, channels = img.shape
         if channels == 4:
+            raw_gray = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY).astype(np.float32)
             img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
             channels = 3
+        else:
+            raw_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32)
 
-    return img, w, h, channels
+    return img, raw_gray, w, h, channels, None
 
 def format_object_type(class_name: str) -> str:
     """Maps internal model class name to a clean human-readable object type."""
@@ -123,25 +151,50 @@ def run_full_pipeline(
     analysis_dir = RESULTS_DIR / analysis_id
     analysis_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Load image
-    img_bgr, width, height, channels = load_image_to_numpy(image_path)
+    # 1. Load image and preserve raw un-stretched acoustic grayscale array
+    img_bgr, raw_gray, width, height, channels, xtf_telemetry = load_image_to_numpy(image_path)
     file_format = Path(orig_filename).suffix.upper().replace(".", "")
 
     # 2. Extract Geospatial Metadata
     geo_meta_raw = extract_geospatial_metadata(image_path, orig_filename=orig_filename)
 
-    # 3. Run YOLO-ESI ONNX inference
+    # Merge XTF navigation & sonar telemetry if available
+    if xtf_telemetry:
+        if xtf_telemetry.get("latitude") is not None and xtf_telemetry.get("longitude") is not None:
+            geo_meta_raw["georeferenced"] = True
+            geo_meta_raw["lat_lon_available"] = True
+            geo_meta_raw["coordinate_source"] = "XTF Navigation Telemetry"
+            geo_meta_raw["camera_latitude"] = xtf_telemetry.get("latitude")
+            geo_meta_raw["camera_longitude"] = xtf_telemetry.get("longitude")
+            geo_meta_raw["camera_altitude"] = xtf_telemetry.get("towfish_depth_m")
+            geo_meta_raw["capture_direction"] = xtf_telemetry.get("heading_deg")
+        geo_meta_raw["towfish_altitude_m"] = xtf_telemetry.get("towfish_altitude_m")
+        geo_meta_raw["slant_range_corrected"] = xtf_telemetry.get("slant_range_corrected")
+        geo_meta_raw["status_message"] = (
+            f"XTF Swath Ingestion: {xtf_telemetry.get('num_pings', 0)} pings | "
+            f"Towfish Alt: {xtf_telemetry.get('towfish_altitude_m', 0.0):.1f}m | "
+            f"Slant Range Corrected: {xtf_telemetry.get('slant_range_corrected', False)}"
+        )
+
+    towfish_alt = (xtf_telemetry.get("towfish_altitude_m") if xtf_telemetry else None) or geo_meta_raw.get("camera_altitude")
+    pixel_res = geo_meta_raw.get("pixel_resolution")
+
+    # 3. Run YOLO-ESI ONNX inference with Acoustic Physics & Mensuration
     engine = YOLOESIInferenceEngine()
     detections_raw, timing = engine.predict(
         img_bgr,
         conf_threshold=conf_threshold,
         iou_threshold=iou_threshold,
-        use_tiling=use_tiling
+        use_tiling=use_tiling,
+        raw_gray=raw_gray,
+        towfish_altitude_m=towfish_alt,
+        pixel_resolution=pixel_res
     )
 
-    # 4. Resolve geographic coordinates for each detection
+    # 4. Resolve geographic coordinates and populate acoustic physics telemetry
     detections_list: List[DetectionRecord] = []
     class_counts: Dict[str, int] = {}
+    material_counts: Dict[str, int] = {}
     confidences = []
 
     for d in detections_raw:
@@ -151,6 +204,9 @@ def run_full_pipeline(
         confidences.append(conf)
         class_counts[cname] = class_counts.get(cname, 0) + 1
         obj_type = format_object_type(cname)
+
+        mat_density = d.get("material_density", "Unclassified Benthic Target")
+        material_counts[mat_density] = material_counts.get(mat_density, 0) + 1
 
         # Calculate geospatial coordinates using image metadata
         geo_dict = pixel_to_geographic(
@@ -168,7 +224,12 @@ def run_full_pipeline(
             confidence=conf,
             bbox=BoundingBox(**d["bbox"]),
             center_pixel=CenterPixel(**d["center_pixel"]),
-            geolocation=geolocation
+            geolocation=geolocation,
+            material_density=d.get("material_density"),
+            estimated_height_meters=d.get("estimated_height_meters"),
+            peak_backscatter_p95=d.get("peak_backscatter_p95"),
+            shadow_length_meters=d.get("shadow_length_meters"),
+            threat_score=d.get("threat_score", 0)
         ))
 
     # 5. Generate Visualizations
@@ -190,6 +251,8 @@ def run_full_pipeline(
     pdf_save_path = analysis_dir / "report.pdf"
     csv_save_path = analysis_dir / "detections.csv"
     json_save_path = analysis_dir / "results.json"
+    nmea_save_path = analysis_dir / "waypoints.txt"
+    kml_save_path = analysis_dir / "dive_plan.kml"
 
     cv2.imwrite(str(orig_save_path), img_bgr)
     cv2.imwrite(str(annotated_save_path), annotated_bgr)
@@ -207,20 +270,24 @@ def run_full_pipeline(
     detected_types = list(dict.fromkeys([format_object_type(c) for c in class_counts.keys()]))
     primary_type = format_object_type(detections_list[0].class_name) if detections_list else None
 
+    # Material classification breakdown summary string
+    mat_summary_parts = [f"{m}: {cnt}" for m, cnt in material_counts.items()]
+    mat_summary_str = f" [{', '.join(mat_summary_parts)}]" if mat_summary_parts else ""
+
     summary = AnalysisSummary(
         debris_detected=debris_detected,
         total_detections=total_dets,
         highest_confidence=round(max_conf, 4) if max_conf else None,
         average_confidence=round(avg_conf, 4) if avg_conf else None,
         class_counts=class_counts,
+        material_counts=material_counts,
         detected_object_types=detected_types,
         primary_object_type=primary_type,
         inference_time_ms=timing["inference_time_ms"],
         total_time_ms=total_time_ms,
         status="SUCCESS",
-        message=f"Detected {total_dets} target(s): {', '.join(detected_types)}." if total_dets > 0 else f"No targets above {conf_threshold:.0%} confidence — raise no alarm, or lower the threshold and re-analyze."
+        message=f"Detected {total_dets} target(s): {', '.join(detected_types)}{mat_summary_str}." if total_dets > 0 else f"No targets above {conf_threshold:.0%} confidence — raise no alarm, or lower the threshold and re-analyze."
     )
-
 
     file_metadata = FileMetadata(
         filename=orig_filename,
@@ -244,7 +311,9 @@ def run_full_pipeline(
         camera_longitude=geo_meta_raw.get("camera_longitude"),
         camera_altitude=geo_meta_raw.get("camera_altitude"),
         capture_direction=geo_meta_raw.get("capture_direction"),
-        footprint_geojson=geo_meta_raw.get("footprint_geojson")
+        footprint_geojson=geo_meta_raw.get("footprint_geojson"),
+        towfish_altitude_m=geo_meta_raw.get("towfish_altitude_m"),
+        slant_range_corrected=geo_meta_raw.get("slant_range_corrected")
     )
 
     model_metadata = ModelMetadata(
@@ -262,12 +331,18 @@ def run_full_pipeline(
         "model_metadata": model_metadata.model_dump()
     }
 
-    # 7. Generate Reports
+    # 7. Generate Reports & C2 Naval Exports
     csv_content = generate_csv_report([d.model_dump() for d in detections_list], geo_meta_raw)
     csv_save_path.write_text(csv_content)
 
     json_content = generate_json_report(analysis_dict)
     json_save_path.write_text(json_content)
+
+    nmea_content = generate_nmea_export([d.model_dump() for d in detections_list], orig_filename, analysis_id)
+    nmea_save_path.write_text(nmea_content)
+
+    kml_content = generate_kml_export([d.model_dump() for d in detections_list], orig_filename, analysis_id)
+    kml_save_path.write_text(kml_content)
 
     create_pdf_report(
         analysis_data=analysis_dict,
@@ -290,7 +365,9 @@ def run_full_pipeline(
         evidence_image_url=f"/api/export/{analysis_id}/evidence",
         csv_export_url=f"/api/export/{analysis_id}/csv",
         json_export_url=f"/api/export/{analysis_id}/json",
-        pdf_report_url=f"/api/export/{analysis_id}/pdf"
+        pdf_report_url=f"/api/export/{analysis_id}/pdf",
+        nmea_export_url=f"/api/export/{analysis_id}/nmea",
+        kml_export_url=f"/api/export/{analysis_id}/kml"
     )
 
 @router.post("/analyze", response_model=AnalysisResponse)

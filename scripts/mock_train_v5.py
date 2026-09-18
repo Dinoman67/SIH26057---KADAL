@@ -19,7 +19,7 @@ from ultralytics import YOLO
 from ultralytics.nn.modules.block import C2f
 from ultralytics.models.yolo.detect.train import DetectionTrainer
 
-ROOT = Path('/home/ashish/sonar-vision')
+ROOT = Path(__file__).resolve().parent.parent
 DATA_YAML = ROOT / 'datasets/sonarvision_multisource_v5/dataset.yaml'
 UNSEEN = ROOT / 'datasets/noaa-debris/h8_unseen_test'
 OUT = ROOT / 'mock_runs'

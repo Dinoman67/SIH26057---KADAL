@@ -45,7 +45,7 @@ class C2fWithSE(nn.Module):
     def forward(self, x):
         return self.se(self.c2f(x))
 
-ROOT = Path('/home/ashish/sonar-vision')
+ROOT = Path(__file__).resolve().parent.parent
 DATA_YAML = ROOT / 'datasets/sonarvision_multisource_v5/dataset.yaml'
 UNSEEN = ROOT / 'datasets/noaa-debris/h8_unseen_test'
 OUT = ROOT / 'mock_runs'

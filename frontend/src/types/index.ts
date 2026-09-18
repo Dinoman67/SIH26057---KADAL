@@ -23,10 +23,16 @@ export interface DetectionRecord {
   id: number;
   class_id: number;
   class_name: string;
+  object_type?: string | null;
   confidence: number;
   bbox: BoundingBox;
   center_pixel: CenterPixel;
   geolocation?: Geolocation | null;
+  material_density?: string | null;
+  estimated_height_meters?: number | null;
+  peak_backscatter_p95?: number | null;
+  shadow_length_meters?: number | null;
+  threat_score?: number | null;
 }
 
 export interface FileMetadata {
@@ -61,6 +67,8 @@ export interface GeospatialMetadata {
   camera_altitude?: number | null;
   capture_direction?: number | null;
   footprint_geojson?: any | null;
+  towfish_altitude_m?: number | null;
+  slant_range_corrected?: boolean | null;
 }
 
 export interface ModelMetadata {
@@ -81,6 +89,7 @@ export interface AnalysisSummary {
   highest_confidence?: number | null;
   average_confidence?: number | null;
   class_counts: Record<string, number>;
+  material_counts?: Record<string, number>;
   inference_time_ms: number;
   total_time_ms: number;
   status: string;
@@ -103,6 +112,8 @@ export interface AnalysisResponse {
   csv_export_url: string;
   json_export_url: string;
   pdf_report_url: string;
+  nmea_export_url?: string;
+  kml_export_url?: string;
 }
 
 export interface SampleItem {

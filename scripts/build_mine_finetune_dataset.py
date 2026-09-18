@@ -113,7 +113,7 @@ def main():
 # Purpose: Fine-tune after multi-source Stage 2 to improve mine detection
 # Source: MILCO-NOMBO (military sonar mine-like contacts)
 
-path: /home/ashish/sonar-vision/{OUTPUT}
+path: {os.path.abspath(OUTPUT)}
 train: images/train
 val: images/val
 test: images/test
