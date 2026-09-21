@@ -1,18 +1,22 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { Globe, AlertCircle, Compass } from 'lucide-react';
-import type { AnalysisResponse } from '../types';
+import type { AnalysisResponse, DetectionRecord } from '../types';
 
 interface MapViewProps {
   analysis: AnalysisResponse | null;
   selectedDetectionId: number | null;
   onSelectDetection: (id: number | null) => void;
+  simDetections?: DetectionRecord[] | null;
+  simMode?: boolean;
 }
 
 export const MapView: React.FC<MapViewProps> = ({
   analysis,
   selectedDetectionId,
   onSelectDetection,
+  simDetections = null,
+  simMode = false,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -68,6 +72,67 @@ export const MapView: React.FC<MapViewProps> = ({
     if (footprintLayerRef.current) {
       map.removeLayer(footprintLayerRef.current);
       footprintLayerRef.current = null;
+    }
+
+    // Simulated waterfall mode: render sim contacts without requiring real georeferencing.
+    if (simMode) {
+      const simList = (simDetections ?? []).filter((d) => d.geolocation?.latitude && d.geolocation?.longitude);
+      if (simList.length === 0) return;
+      const simBounds = L.latLngBounds([]);
+      simList.forEach((det) => {
+        if (!det.geolocation) return;
+        const latLng: [number, number] = [det.geolocation.latitude, det.geolocation.longitude];
+        simBounds.extend(latLng);
+        const isSelected = selectedDetectionId === det.id;
+        const simIcon = L.divIcon({
+          className: 'custom-map-marker',
+          html: `
+            <div style="
+              width: 28px;
+              height: 28px;
+              background: ${isSelected ? '#f59e0b' : '#0284c7'};
+              border: 2px dashed ${isSelected ? '#fef08a' : '#38bdf8'};
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #0f172a;
+              font-weight: 800;
+              font-size: 11px;
+              font-family: monospace;
+              box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+              transform: translate(-50%, -50%);
+            ">
+              ${det.id}
+            </div>
+          `,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        });
+        const marker = L.marker(latLng, { icon: simIcon });
+        marker.bindPopup(`
+          <div style="font-family: monospace; font-size: 12px; line-height: 1.4; min-width: 200px;">
+            <div style="border-bottom: 1px solid #334155; padding-bottom: 4px; margin-bottom: 6px; display: flex; justify-content: space-between;">
+              <strong style="color: #38bdf8;">SIM TARGET #${det.id.toString().padStart(2, '0')}</strong>
+              <span style="color: #10b981; font-weight: bold;">${(det.confidence * 100).toFixed(1)}%</span>
+            </div>
+            <div style="margin-bottom: 3px;">
+              <span style="color: #94a3b8;">Class:</span> <span style="color: #f1f5f9;">${det.class_name}</span>
+            </div>
+            <div style="font-size: 10px; color: #64748b;">Source: waterfall-simulated</div>
+          </div>
+        `);
+        marker.on('click', () => {
+          onSelectDetection(det.id);
+        });
+        if (markersLayerRef.current) {
+          markersLayerRef.current.addLayer(marker);
+        }
+      });
+      if (simBounds.isValid()) {
+        map.fitBounds(simBounds, { padding: [50, 50], maxZoom: 12 });
+      }
+      return;
     }
 
     if (!analysis || !isGeoreferenced) return;
@@ -233,7 +298,7 @@ export const MapView: React.FC<MapViewProps> = ({
     if (bounds.isValid()) {
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 17 });
     }
-  }, [analysis, selectedDetectionId, isGeoreferenced, hasCameraGps, onSelectDetection]);
+  }, [analysis, selectedDetectionId, isGeoreferenced, hasCameraGps, onSelectDetection, simDetections, simMode]);
 
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded flex flex-col h-full overflow-hidden">
@@ -247,7 +312,12 @@ export const MapView: React.FC<MapViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {isGeoreferenced ? (
+          {simMode ? (
+            <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800">
+              <Compass className="h-3 w-3" />
+              SIMULATED TRANSECT
+            </span>
+          ) : isGeoreferenced ? (
             <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800">
               <Compass className="h-3 w-3" />
               {hasCameraGps && !analysis?.detections.some((d) => d.geolocation)
@@ -266,8 +336,8 @@ export const MapView: React.FC<MapViewProps> = ({
       <div className="relative flex-1 min-h-[360px] bg-slate-950">
         <div ref={mapContainerRef} className="w-full h-full min-h-[360px]" />
 
-        {/* Unavailable overlay message if non-georeferenced */}
-        {analysis && !isGeoreferenced && (
+        {/* Unavailable overlay message if non-georeferenced (hidden in sim mode) */}
+        {analysis && !isGeoreferenced && !simMode && (
           <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-[1000] flex flex-col items-center justify-center p-6 text-center font-mono">
             <div className="h-12 w-12 rounded border border-slate-700 bg-slate-900 flex items-center justify-center text-slate-400 mb-3">
               <AlertCircle className="h-6 w-6 text-amber-400" />

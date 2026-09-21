@@ -124,3 +124,86 @@ export interface SampleItem {
   has_geolocation: boolean;
   filename: string;
 }
+
+// Waterfall simulator (simulated demo transect; does not affect real analysis)
+export type WaterfallColormap = 'phosphor' | 'amber' | 'cyan' | 'grayscale';
+
+export type WaterfallThreatLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+export interface WaterfallTarget {
+  id: number;
+  class_name: string;
+  confidence: number;
+  y_trigger_px: number;
+  bbox: [number, number, number, number];
+  latitude: number;
+  longitude: number;
+  threat_level: WaterfallThreatLevel;
+}
+
+export interface WaterfallSurvey {
+  survey_id: string;
+  title: string;
+  strip_image_url: string;
+  total_length_meters: number;
+  swath_width_meters: number;
+  vessel_speed_knots: number;
+  ping_rate_hz: number;
+  targets: WaterfallTarget[];
+}
+
+export interface WaterfallStreamState {
+  isPlaying: boolean;
+  speedMultiplier: number;
+  currentY: number;
+  vesselSpeedKts: number;
+  colormap: WaterfallColormap;
+  activeTargets: WaterfallTarget[];
+  lockedTargetId: number | null;
+}
+
+const WATERFALL_CLASS_IDS: Record<string, number> = {
+  unknown_debris: 0,
+  airplane: 1,
+  mine: 2,
+  wreck: 3,
+};
+
+const WATERFALL_THREAT_SCORES: Record<WaterfallThreatLevel, number> = {
+  CRITICAL: 90,
+  HIGH: 70,
+  MEDIUM: 50,
+  LOW: 25,
+};
+
+export function waterfallTargetToDetection(target: WaterfallTarget): DetectionRecord {
+  const class_id = WATERFALL_CLASS_IDS[target.class_name] ?? 0;
+  const threat_score = WATERFALL_THREAT_SCORES[target.threat_level] ?? 25;
+  const isMetallic = target.class_name !== 'unknown_debris';
+  // Relative bbox mapped onto a 512px reference frame for inventory display.
+  const [rx, ry, rw, rh] = target.bbox;
+  const x1 = Math.round(rx * 512);
+  const y1 = Math.round(ry * 512);
+  const x2 = Math.round((rx + rw) * 512);
+  const y2 = Math.round((ry + rh) * 512);
+  return {
+    id: target.id,
+    class_id,
+    class_name: target.class_name,
+    object_type: target.class_name,
+    confidence: target.confidence,
+    bbox: { x1, y1, x2, y2 },
+    center_pixel: { x: Math.round((x1 + x2) / 2), y: Math.round((y1 + y2) / 2) },
+    geolocation: {
+      latitude: target.latitude,
+      longitude: target.longitude,
+      crs: 'WGS84',
+      coordinate_source: 'waterfall-simulated',
+    },
+    material_density: isMetallic ? 'Hard (Metallic)' : 'Soft (Synthetic/Plastic)',
+    estimated_height_meters: null,
+    peak_backscatter_p95: null,
+    shadow_length_meters: null,
+    threat_score,
+  };
+}

@@ -8,6 +8,9 @@ interface ImageViewerProps {
   selectedDetectionId?: number | null;
   onSelectDetection?: (id: number | null) => void;
   isAnalyzing: boolean;
+  displayMode?: 'static' | 'waterfall';
+  onDisplayModeChange?: (mode: 'static' | 'waterfall') => void;
+  waterfallSlot?: React.ReactNode;
 }
 
 type ViewMode = 'annotated' | 'original' | 'mask' | 'colormap' | 'evidence';
@@ -17,6 +20,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   isAnalyzing,
   selectedDetectionId,
   onSelectDetection,
+  displayMode = 'static',
+  onDisplayModeChange,
+  waterfallSlot,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('annotated');
   const [zoom, setZoom] = useState(1);
@@ -77,7 +83,37 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     <div className="bg-slate-900/80 border border-slate-800 rounded flex flex-col h-full overflow-hidden">
       {/* Top Toolbar */}
       <div className="border-b border-slate-800 bg-slate-950/60 p-2.5 flex flex-wrap items-center justify-between gap-3">
-        {/* Layer Mode Switcher */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Display mode: static vs live waterfall (same toolbar language) */}
+          {onDisplayModeChange && (
+            <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 p-0.5 rounded font-mono text-xs">
+              <button
+                type="button"
+                onClick={() => onDisplayModeChange('static')}
+                className={`px-2.5 py-1 rounded transition-all ${
+                  displayMode === 'static'
+                    ? 'bg-slate-200 text-slate-950 font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Static Analysis
+              </button>
+              <button
+                type="button"
+                onClick={() => onDisplayModeChange('waterfall')}
+                className={`px-2.5 py-1 rounded transition-all flex items-center gap-1.5 ${
+                  displayMode === 'waterfall'
+                    ? 'bg-cyan-500 text-slate-950 font-bold shadow-[0_0_10px_rgba(6,182,212,0.3)]'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${displayMode === 'waterfall' ? 'bg-slate-950 animate-pulse' : 'bg-cyan-400'}`} />
+                Live Waterfall
+              </button>
+            </div>
+          )}
+        {/* Layer Mode Switcher (static only) */}
+        {displayMode === 'static' && (
         <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-0.5 rounded font-mono text-xs flex-wrap">
           <button
             type="button"
@@ -140,8 +176,11 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             Evidence
           </button>
         </div>
+        )}
+        </div>
 
-        {/* Right side: Zoom crop toggle + Zoom controls */}
+        {/* Right side: Zoom crop toggle + Zoom controls (static only) */}
+        {displayMode === 'static' && (
         <div className="flex items-center gap-2 font-mono text-xs">
           {/* Zoom Crop Toggle */}
           {analysis && analysis.detections.length > 0 && (
@@ -189,9 +228,15 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             {Math.round(zoom * 100)}%
           </span>
         </div>
+        )}
       </div>
 
-      {/* Main Content: Image + Optional Zoom Crop Panel */}
+      {/* Main Content: waterfall simulator or static image + zoom panel */}
+      {displayMode === 'waterfall' && waterfallSlot ? (
+        <div className="flex-1 flex overflow-hidden min-h-[420px]">
+          <div className="flex-1 flex flex-col overflow-hidden">{waterfallSlot}</div>
+        </div>
+      ) : (
       <div className="flex-1 flex overflow-hidden">
         {/* Image Canvas */}
         <div
@@ -372,6 +417,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

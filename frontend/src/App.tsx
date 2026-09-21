@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { UploadPanel } from './components/UploadPanel';
 import { ControlBar } from './components/ControlBar';
 import { ImageViewer } from './components/ImageViewer';
+import { WaterfallSimulator } from './components/WaterfallSimulator';
 import { SummaryPanel } from './components/SummaryPanel';
 import { MapView } from './components/MapView';
 import { DetectionTable } from './components/DetectionTable';
@@ -12,10 +13,12 @@ import { ReportActions } from './components/ReportActions';
 import {
   fetchModelInfo,
   fetchSamples,
+  fetchWaterfallSurveys,
   analyzeImage,
   analyzeSample,
 } from './services/api';
-import type { AnalysisResponse, ModelMetadata, SampleItem } from './types';
+import type { AnalysisResponse, DetectionRecord, ModelMetadata, SampleItem, WaterfallSurvey, WaterfallTarget } from './types';
+import { waterfallTargetToDetection } from './types';
 import { AlertTriangle, X } from 'lucide-react';
 
 export function App() {
@@ -38,6 +41,12 @@ export function App() {
   // Interactive Highlighting
   const [hoveredDetectionId, setHoveredDetectionId] = useState<number | null>(null);
   const [selectedDetectionId, setSelectedDetectionId] = useState<number | null>(null);
+
+  // Live waterfall (simulated transect; isolated from real analysis/exports)
+  const [displayMode, setDisplayMode] = useState<'static' | 'waterfall'>('static');
+  const [waterfallSurveys, setWaterfallSurveys] = useState<WaterfallSurvey[]>([]);
+  const [activeSurveyId, setActiveSurveyId] = useState<string | null>(null);
+  const [simDetections, setSimDetections] = useState<DetectionRecord[]>([]);
 
   const handleFileUpload = async (file: File) => {
     setUploadedFile(file);
@@ -95,9 +104,37 @@ export function App() {
         console.error('Failed initialization:', err);
         setError('Could not connect to backend YOLO-ESI inference service.');
       }
+      // Waterfall surveys are optional/demo-only; never block startup.
+      try {
+        const surveys = await fetchWaterfallSurveys();
+        setWaterfallSurveys(surveys);
+        if (surveys.length > 0) setActiveSurveyId(surveys[0].survey_id);
+      } catch {
+        // Fallback already handled inside fetchWaterfallSurveys.
+      }
     }
     init();
   }, []);
+
+  const activeSurvey = waterfallSurveys.find((s) => s.survey_id === activeSurveyId) ?? waterfallSurveys[0] ?? null;
+
+  const handleWaterfallPassed = (target: WaterfallTarget) => {
+    setSimDetections((prev) => {
+      if (prev.some((d) => d.id === target.id)) return prev;
+      return [...prev, waterfallTargetToDetection(target)];
+    });
+  };
+
+  const handleWaterfallLocked = (target: WaterfallTarget) => {
+    setSelectedDetectionId(target.id);
+  };
+
+  const handleDisplayModeChange = (mode: 'static' | 'waterfall') => {
+    setDisplayMode(mode);
+    if (mode === 'waterfall') setSimDetections([]);
+  };
+
+  const visibleDetections = displayMode === 'waterfall' ? simDetections : analysis?.detections ?? [];
 
   if (showLanding) {
     return <LandingPage onLaunch={() => setShowLanding(false)} />;
@@ -162,11 +199,20 @@ export function App() {
               selectedDetectionId={selectedDetectionId}
               onSelectDetection={setSelectedDetectionId}
               isAnalyzing={isAnalyzing}
+              displayMode={displayMode}
+              onDisplayModeChange={handleDisplayModeChange}
+              waterfallSlot={
+                <WaterfallSimulator
+                  survey={activeSurvey}
+                  onTargetLocked={handleWaterfallLocked}
+                  onTargetPassed={handleWaterfallPassed}
+                />
+              }
             />
 
             {/* Target Inventory Table below Image */}
             <DetectionTable
-              detections={analysis?.detections || []}
+              detections={visibleDetections}
               hoveredDetectionId={hoveredDetectionId}
               selectedDetectionId={selectedDetectionId}
               onHoverDetection={setHoveredDetectionId}
@@ -185,6 +231,8 @@ export function App() {
               analysis={analysis}
               selectedDetectionId={selectedDetectionId}
               onSelectDetection={setSelectedDetectionId}
+              simDetections={displayMode === 'waterfall' ? simDetections : null}
+              simMode={displayMode === 'waterfall'}
             />
 
             <MetadataPanel

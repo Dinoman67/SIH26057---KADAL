@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 from backend.config import HOST, PORT, SAMPLES_DIR, BASE_DIR
 from backend.inference.engine import YOLOESIInferenceEngine
 from backend.utils.samples_generator import ensure_sample_assets
-from backend.api import health_router, metadata_router, analysis_router, export_router
+from backend.api import health_router, metadata_router, analysis_router, export_router, waterfall_router
 
 FRONTEND_DIST = BASE_DIR.parent / "frontend" / "dist"
 
@@ -50,6 +50,7 @@ app.include_router(health_router, prefix="/api")
 app.include_router(metadata_router, prefix="/api")
 app.include_router(analysis_router, prefix="/api")
 app.include_router(export_router, prefix="/api")
+app.include_router(waterfall_router, prefix="/api")
 
 # Mount static samples directory
 app.mount("/static/samples", StaticFiles(directory=str(SAMPLES_DIR)), name="samples")
