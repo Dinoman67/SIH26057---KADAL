@@ -278,6 +278,7 @@ def soft_nms(
     if len(boxes) == 0:
         return []
 
+    boxes = boxes.copy()
     x1 = boxes[:, 0].copy()
     y1 = boxes[:, 1].copy()
     x2 = boxes[:, 2].copy()

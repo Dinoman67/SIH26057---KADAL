@@ -56,6 +56,10 @@ class TestAcousticPhysics(unittest.TestCase):
         self.assertGreater(mens["estimated_height_meters"], 0.1)
         self.assertGreater(mens["shadow_length_meters"], 0)
         self.assertTrue(mens["shadow_detected"])
+        self.assertIn("target_length_meters", mens)
+        self.assertIn("target_width_meters", mens)
+        self.assertGreater(mens["target_length_meters"], 0.0)
+        self.assertGreater(mens["target_width_meters"], 0.0)
 
     def test_slant_range_correction(self):
         """Verify slant-range correction geometry."""
@@ -77,6 +81,24 @@ class TestAcousticPhysics(unittest.TestCase):
         keep = soft_nms(boxes, scores, iou_threshold=0.45)
         self.assertIn(0, keep)
         self.assertIn(2, keep)
+
+    def test_soft_nms_preserves_caller_boxes_immutability(self):
+        """Verify soft_nms does not mutate the caller's boxes array in place and maps correctly."""
+        boxes = np.array([
+            [10, 10, 20, 20],
+            [10, 10, 22, 22],
+            [50, 50, 60, 60]
+        ], dtype=float)
+        scores = np.array([0.4, 0.9, 0.8], dtype=float)
+        boxes_before = boxes.copy()
+
+        keep = soft_nms(boxes, scores, iou_threshold=0.45)
+        
+        # Caller boxes array must not be mutated
+        np.testing.assert_array_equal(boxes, boxes_before)
+        # Highest score box (index 1, score 0.9) must be selected first
+        self.assertEqual(keep[0], 1)
+        np.testing.assert_array_equal(boxes[keep[0]], np.array([10, 10, 22, 22], dtype=float))
 
     def test_adaptive_backscatter_dilution(self):
         """Verify adaptive window isolates metallic highlights even when diluted by seabed (Fix 1)."""
