@@ -1,6 +1,19 @@
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
+def format_object_type(class_name: str) -> str:
+    """Map raw class names to standardized MoES SIH26057 domain keywords."""
+    c = (class_name or "").lower().strip()
+    if c in ("unknown_debris", "marine_debris", "debris"):
+        return "Entangled Net / Marine Debris"
+    elif c in ("mine", "cylinder", "pipe"):
+        return "Cylinder / Pipe"
+    elif c in ("wreck", "shipwreck"):
+        return "Shipwreck"
+    elif c in ("airplane", "aircraft"):
+        return "Submerged Aircraft"
+    return c.replace("_", " ").title()
+
 class BoundingBox(BaseModel):
     x1: float = Field(..., description="Top-left X pixel coordinate")
     y1: float = Field(..., description="Top-left Y pixel coordinate")

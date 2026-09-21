@@ -12,6 +12,7 @@ import math
 from typing import List, Dict, Any, Optional
 from xml.sax.saxutils import escape
 from datetime import datetime
+from backend.schemas.detection import format_object_type
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -162,16 +163,19 @@ def generate_kml_export(
             badge_color = "#059669"
 
         cname = pt.get("class_name", "target")
-        obj_type = pt.get("object_type", cname.replace("_", " ").title())
+        obj_type = pt.get("object_type") or format_object_type(cname)
         material = pt.get("material_density", "Unclassified")
         height = pt.get("estimated_height_meters")
-        h_str = f"{height:.2f} m" if (height is not None and height > 0) else "Not Mensurated"
         l_val = pt.get("target_length_meters")
         w_val = pt.get("target_width_meters")
         if l_val is not None and w_val is not None and height is not None and height > 0:
             dim_str = f"{l_val:.1f} × {w_val:.1f} × {height:.1f} m"
+        elif l_val is not None and w_val is not None:
+            dim_str = f"{l_val:.1f} × {w_val:.1f} m"
+        elif height is not None and height > 0:
+            dim_str = f"H: {height:.2f} m"
         else:
-            dim_str = h_str
+            dim_str = "Not Mensurated"
         conf = pt.get("confidence", 0.0)
         p95 = pt.get("peak_backscatter_p95")
         p95_str = f"{p95:.1f}/255" if p95 is not None else "N/A"

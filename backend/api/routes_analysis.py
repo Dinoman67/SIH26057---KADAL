@@ -32,7 +32,8 @@ from backend.reports.nmea_export import generate_nmea_export
 from backend.reports.kml_export import generate_kml_export
 from backend.schemas.detection import (
     AnalysisResponse, AnalysisSummary, DetectionRecord, FileMetadata,
-    GeospatialMetadata, ModelMetadata, BoundingBox, CenterPixel, Geolocation
+    GeospatialMetadata, ModelMetadata, BoundingBox, CenterPixel, Geolocation,
+    format_object_type
 )
 
 router = APIRouter(tags=["Analysis"])
@@ -127,24 +128,14 @@ def load_image_to_numpy(image_path: str) -> Tuple[np.ndarray, np.ndarray, int, i
 
     return img, raw_gray, w, h, channels, None
 
-def format_object_type(class_name: str) -> str:
-    """Maps internal model class name to a clean human-readable object type aligned with SIH26057."""
-    mapping = {
-        "unknown_debris": "Entangled Net / Marine Debris",
-        "marine_debris": "Entangled Net / Marine Debris",
-        "airplane": "Submerged Aircraft",
-        "mine": "Cylinder / Pipe",
-        "wreck": "Shipwreck",
-    }
-    return mapping.get(class_name.lower(), class_name.replace("_", " ").title())
-
 def run_full_pipeline(
     image_path: str,
     orig_filename: str,
     file_size_bytes: int,
     conf_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD,
     iou_threshold: float = DEFAULT_IOU_THRESHOLD,
-    use_tiling: Optional[bool] = None
+    use_tiling: Optional[bool] = None,
+    use_soft_nms: bool = True
 ) -> AnalysisResponse:
     t_start = time.perf_counter()
     analysis_id = uuid.uuid4().hex
@@ -186,6 +177,7 @@ def run_full_pipeline(
         conf_threshold=conf_threshold,
         iou_threshold=iou_threshold,
         use_tiling=use_tiling,
+        use_soft_nms=use_soft_nms,
         raw_gray=raw_gray,
         towfish_altitude_m=towfish_alt,
         pixel_resolution=pixel_res
@@ -288,6 +280,7 @@ def run_full_pipeline(
         inference_time_ms=timing["inference_time_ms"],
         total_time_ms=total_time_ms,
         status="SUCCESS",
+        noise_filtering_active=use_soft_nms,
         message=f"Detected {total_dets} target(s): {', '.join(detected_types)}{mat_summary_str}." if total_dets > 0 else f"No targets above {conf_threshold:.0%} confidence — raise no alarm, or lower the threshold and re-analyze."
     )
 
@@ -378,7 +371,8 @@ async def analyze_image(
     sidecars: Optional[List[UploadFile]] = File(None),
     confidence_threshold: float = Form(DEFAULT_CONFIDENCE_THRESHOLD),
     iou_threshold: float = Form(DEFAULT_IOU_THRESHOLD),
-    use_tiling: Optional[bool] = Form(None)
+    use_tiling: Optional[bool] = Form(None),
+    use_soft_nms: bool = Form(True)
 ):
     """
     Analyzes an uploaded image. Optionally accepts georeferencing sidecar
@@ -399,7 +393,8 @@ async def analyze_image(
             file_size_bytes=file_size,
             conf_threshold=confidence_threshold,
             iou_threshold=iou_threshold,
-            use_tiling=use_tiling
+            use_tiling=use_tiling,
+            use_soft_nms=use_soft_nms
         )
         return response
     finally:
@@ -413,6 +408,7 @@ class SampleRequest(BaseModel):
     confidence_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD
     iou_threshold: float = DEFAULT_IOU_THRESHOLD
     use_tiling: Optional[bool] = None
+    use_soft_nms: bool = True
 
 @router.post("/analyze-sample", response_model=AnalysisResponse)
 async def analyze_sample_image(req: SampleRequest):
@@ -446,5 +442,6 @@ async def analyze_sample_image(req: SampleRequest):
         file_size_bytes=file_size,
         conf_threshold=req.confidence_threshold,
         iou_threshold=req.iou_threshold,
-        use_tiling=req.use_tiling
+        use_tiling=req.use_tiling,
+        use_soft_nms=req.use_soft_nms
     )

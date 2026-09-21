@@ -314,8 +314,8 @@ def soft_nms(
         inter = w_inter * h_inter
         iou = inter / (areas[i] + areas[i+1:] - inter + 1e-7)
 
-        # Apply Gaussian decay for boxes exceeding threshold
-        decay = np.exp(-(iou ** 2) / sigma)
+        # Apply Gaussian decay for boxes exceeding IoU threshold
+        decay = np.where(iou >= iou_threshold, np.exp(-(iou ** 2) / sigma), 1.0)
         s[i+1:] = s[i+1:] * decay
 
     return keep
