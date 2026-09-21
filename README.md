@@ -108,7 +108,7 @@ Evaluated strictly on independent, held-out side-scan sonar images (zero file ov
 
 ### Scope Notes: Coverage by Design
 
-**Statement fidelity (SIH26057).** The statement asks for shipwrecks, pipes, cylinders, and entangled debris nets, plus anomaly reporting with geotagging, across debris, MCM, and SAR threat types. Our four classes (`unknown_debris`, `mine`, `wreck`, `airplane`), together with the GeoTIFF→WGS84 solver and the PDF/CSV/JSON engine, map directly onto those clauses.
+**Statement fidelity (SIH26057).** The statement asks for shipwrecks, pipes, cylinders, and entangled debris nets, plus anomaly reporting with geotagging, across debris, MCM, and SAR threat types. Our four classes (`unknown_debris`, `mine`, `wreck`, `airplane`), together with the GeoTIFF→WGS84 solver and the PDF/CSV/JSON engine (with optional NMEA/KML helpers), map directly onto those clauses.
 
 **A note on ghost nets.** Ghost-net SSS detection is established science — e.g. GhostNetZero (Microsoft Research + WWF, 2025) reports ~90% detection from 412 expert-annotated Baltic/Puget Sound segments. That dataset is private, and no open student-usable ghost-net benchmark exists today. Our R&D decision: train on real survey acoustics only, using physics-preserving augmentation of real frames and no rendered objects (speckle/shadow statistics mismatch is documented to degrade real-survey transfer). Net-like contacts are therefore served through `unknown_debris`; a dedicated head becomes a fine-tune the day an open benchmark appears.
 
@@ -124,6 +124,8 @@ SonarVision bridges raw AI detections with hydrographic GIS operations by genera
 2. **Tabular CSV Exports**: Detailed spreadsheets with target ID, object type, class name, bounding box bounds, center coordinates, and resolved WGS84 latitude/longitude.
 3. **Machine-Readable JSON**: Complete API response schema for seamless integration into C2 (Command & Control) naval systems.
 4. **Geospatial GeoTIFF Solver**: Solves the embedded affine transform matrix (`EPSG:26916` $\to$ `WGS84`) to project pixel bounding boxes into real-world geographic coordinates.
+5. **Optional Field Exports (supporting)**: NMEA 0183 `$GPWPL` waypoints (`waypoints.txt`) and Google Earth KML dive-plan (`dive_plan.kml`) helpers under `/api/export`, for teams that already use ECDIS/chartplotters.
+6. **Supporting Detection Context (optional)**: Acoustic backscatter/shadow context, threat ordering, and slant-range / XTF ingestion helpers (`backend/inference/`, `backend/reports/`) are available alongside the core detector; see Repository Layout.
 
 ---
 
@@ -192,6 +194,7 @@ To run live GPU/CPU ONNX tensor inference:
 `POST /api/analyze` auto-resolves real-world coordinates, no model changes needed:
 * **GeoTIFF** (embedded transform/CRS) and **EXIF-GPS JPGs** work out of the box.
 * Plain PNG/JPG + georeferencing sidecars (`.tfw`, `.jgw`, `.pgw`, `.wld`, `.prj`, `.aux.xml`) via the optional `sidecars` form field.
+* Native `.XTF` waterfall files are also accepted where available (slant-range helper applied when telemetry is present).
 * Detections from files with no survey metadata return pixel boxes with an explicit non-georeferenced status — coordinates are never fabricated.
 
 ---
@@ -203,8 +206,8 @@ sonarvision/
 ├── backend/                  # High-performance FastAPI REST API
 │   ├── api/                  # Analysis, metadata, health, and export endpoints
 │   ├── geospatial/           # Affine coordinate matrix & EXIF GPS solvers
-│   ├── inference/            # YOLOv8-ESI ONNX engine, letterboxing, soft-NMS
-│   ├── reports/              # PDF, CSV, and JSON intelligence report generators
+│   ├── inference/            # YOLOv8-ESI ONNX engine, letterboxing, soft-NMS, acoustic context + slant-range / XTF helpers
+│   ├── reports/              # PDF, CSV, JSON intelligence report generators (+ optional NMEA/KML helpers)
 │   └── static/samples/       # Preloaded test crops for instant browser evaluation
 ├── frontend/                 # Interactive React + TypeScript + Tailwind UI
 │   ├── src/components/       # Sonar viewer, Leaflet map, detection table, inspector
