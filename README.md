@@ -1,4 +1,4 @@
-# 🌊 SonarVision: Autonomous Multi-Sensor Marine Debris & Threat Intelligence System
+# SonarVision: Autonomous Multi-Sensor Marine Debris & Threat Intelligence System
 
 <div align="center">
 
@@ -7,33 +7,33 @@
 [![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react&logoColor=black)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![ONNX Runtime](https://img.shields.io/badge/ONNX_Runtime-1.16%2B-005CED?logo=onnx&logoColor=white)](https://onnxruntime.ai)
-[![Hugging Face Model](https://img.shields.io/badge/🤗%20Hugging%20Face-Model%20(v6)-yellow?logo=huggingface&logoColor=white)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6)
-[![Hugging Face Dataset](https://img.shields.io/badge/🤗%20Hugging%20Face-Dataset%20(v6)-blue?logo=huggingface&logoColor=white)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Hugging Face Model](https://img.shields.io/badge/Hugging%20Face-Model%20(v6)-yellow?logo=huggingface&logoColor=white)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6)
+[![Hugging Face Dataset](https://img.shields.io/badge/Hugging%20Face-Dataset%20(v6)-blue?logo=huggingface&logoColor=white)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![SIH 2026](https://img.shields.io/badge/Smart_India_Hackathon-2026-orange)](https://www.sih.gov.in/)
 
 **Smart India Hackathon 2026 | Problem Statement: SIH26057 (Ministry of Earth Sciences / NIOT)**  
 *Real-time AI for Marine Debris, Naval Mine Countermeasures (MCM), Shipwrecks, and Submerged Aircraft Localization in Side-Scan Sonar (SSS) Imagery.*
 
-[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [Live Demo](#-quick-start) • [Architecture](#-solution-yolov8-esi-architecture) • [Benchmarks](#-empirical-benchmarks) • [Report Engine](#-automated-intelligence-reporting) • [Pitch Guide](#-sih-2026-hackathon-pitch-flow)
+[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [Live Demo](#quick-start) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Report Engine](#automated-intelligence-reporting)
 
 </div>
 
 ---
 
-## 📌 The Problem: Why Standard Computer Vision Fails on Sonar
+## The Problem: Why Standard Computer Vision Fails on Sonar
 
 Underwater marine debris, lost cargo containers, unexploded naval mines, and submerged aircraft are completely invisible from satellite optical cameras. Oceanographic vessels rely on **Side-Scan Sonar (SSS)**, which creates acoustic intensity maps of the seafloor.
 
 Standard computer vision models (COCO-trained YOLOv8, Faster R-CNN) fail catastrophically on sonar:
-* 🌑 **No Color Information**: Sonar outputs single-channel acoustic backscatter intensity.
-* 🌓 **Acoustic Shadow Physics**: Objects are characterized not just by bright highlights, but by the **acoustic shadows** cast directly behind them based on towfish altitude and sound grazing angle.
-* 🌊 **Speckle Noise & Clutter**: Natural sand ripples, seafloor mud, and rocky reefs produce intense false alarms for brightness-dependent detectors.
-* ⏱️ **Manual Review Bottleneck**: Surveyors spend days reviewing multi-gigabyte continuous waterfall records.
+* **No Color Information**: Sonar outputs single-channel acoustic backscatter intensity.
+* **Acoustic Shadow Physics**: Objects are characterized not just by bright highlights, but by the **acoustic shadows** cast directly behind them based on towfish altitude and sound grazing angle.
+* **Speckle Noise & Clutter**: Natural sand ripples, seafloor mud, and rocky reefs produce intense false alarms for brightness-dependent detectors.
+* **Manual Review Bottleneck**: Surveyors spend days reviewing multi-gigabyte continuous waterfall records.
 
 ---
 
-## 🧠 Solution: YOLOv8-ESI Architecture
+## Solution: YOLOv8-ESI Architecture
 
 **YOLOv8-ESI** (Edge Sonar Intelligence) introduces **Squeeze-and-Excitation (SE)** channel attention directly into the C2f feature bottleneck of a lightweight CSPDarknet backbone:
 
@@ -69,7 +69,7 @@ Standard computer vision models (COCO-trained YOLOv8, Faster R-CNN) fail catastr
 
 ---
 
-## 🚢 Two-Model Operational Architecture
+## Two-Model Operational Architecture
 
 To provide maximum operational flexibility for maritime authorities and environmental teams, SonarVision supports a two-model strategy:
 
@@ -84,7 +84,7 @@ To provide maximum operational flexibility for maritime authorities and environm
 
 ---
 
-## 📊 Empirical Benchmarks
+## Empirical Benchmarks
 
 ### Unseen Test Split (962 Images, Zero File Overlap)
 
@@ -116,7 +116,7 @@ Evaluated strictly on independent, held-out side-scan sonar images (zero file ov
 
 ---
 
-## 📑 Automated Intelligence Reporting
+## Automated Intelligence Reporting
 
 SonarVision bridges raw AI detections with hydrographic GIS operations by generating instant intelligence deliverables:
 
@@ -125,19 +125,19 @@ SonarVision bridges raw AI detections with hydrographic GIS operations by genera
 3. **Machine-Readable JSON**: Complete API response schema for seamless integration into C2 (Command & Control) naval systems.
 4. **Geospatial GeoTIFF Solver**: Solves the embedded affine transform matrix (`EPSG:26916` $\to$ `WGS84`) to project pixel bounding boxes into real-world geographic coordinates.
 5. **Optional Field Exports (supporting)**: NMEA 0183 `$GPWPL` waypoints (`waypoints.txt`) and Google Earth KML dive-plan (`dive_plan.kml`) helpers under `/api/export`, for teams that already use ECDIS/chartplotters.
-6. **Supporting Detection Context (optional)**: Acoustic backscatter/shadow context, threat ordering, and slant-range / XTF ingestion helpers (`backend/inference/`, `backend/reports/`) are available alongside the core detector; see Repository Layout.
+6. **Supporting Detection Context (optional)**: Acoustic backscatter/shadow context, threat ordering, and slant-range / XTF ingestion helpers (`backend/inference/`, `backend/reports/`) are available alongside the core detector.
 7. **Optional Live Waterfall View (supporting demo)**: The viewer also offers a simulated transect mode alongside static analysis, reusing the same table/map panels; simulated contacts are labeled and kept separate from real analysis exports.
 
 ---
 
-## 📥 Hugging Face Model & Dataset Downloads
+## Hugging Face Model & Dataset Downloads
 
 To download the trained production model weights or access the acoustic side-scan sonar benchmark dataset, visit our official Hugging Face repositories:
 
 | Resource | Hugging Face Repository | Description & Contents |
 | :--- | :--- | :--- |
-| **Model Weights (v6)** | [🤗 `Dinoman1221/sonarvision-yolov8-esi-v6`](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) | **YOLOv8-ESI v6 ONNX models** (`yolo_esi_v6_fp16.onnx` @ 5.9 MB, `yolo_esi_v6_fp32.onnx` @ 11.67 MB, and `yolo_esi_core_debris_fp16.onnx` @ 6.2 MB — leaked reference only), model cards with test benchmarks, and standalone ONNX inference code. |
-| **Multi-Source Dataset (v6)** | [🤗 `Dinoman1221/sonarvision-multisource-v6`](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) | **924 MB archive** containing **5,558 side-scan sonar images** (4,033 train, 563 val, 962 strictly held-out test), `dataset.yaml`, 4 tactical target classes, and zero-leakage split protocol. |
+| **Model Weights (v6)** | [`Dinoman1221/sonarvision-yolov8-esi-v6`](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) | **YOLOv8-ESI v6 ONNX models** (`yolo_esi_v6_fp16.onnx` @ 5.9 MB, `yolo_esi_v6_fp32.onnx` @ 11.67 MB, and `yolo_esi_core_debris_fp16.onnx` @ 6.2 MB — leaked reference only), model cards with test benchmarks, and standalone ONNX inference code. |
+| **Multi-Source Dataset (v6)** | [`Dinoman1221/sonarvision-multisource-v6`](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) | **924 MB archive** containing **5,558 side-scan sonar images** (4,033 train, 563 val, 962 strictly held-out test), `dataset.yaml`, 4 tactical target classes, and zero-leakage split protocol. |
 
 ### CLI Download Commands:
 ```bash
@@ -150,7 +150,7 @@ hf download Dinoman1221/sonarvision-multisource-v6 sonarvision_multisource_v6.zi
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ### 1. Clone & Run (One-Command Startup)
 
@@ -173,7 +173,7 @@ cp models/yolo_esi_v6_fp16.onnx models/yolo_esi_fp16.onnx
 ```
 
 Open your browser to:
-👉 **`http://localhost:8000`**
+**`http://localhost:8000`**
 
 *(If Node.js is not installed, the backend immediately serves built production assets and starts in Demonstration Mode with preloaded multi-class test crops).*
 
@@ -200,42 +200,15 @@ To run live GPU/CPU ONNX tensor inference:
 * Native `.XTF` waterfall files are also accepted where available (slant-range helper applied when telemetry is present).
 * Detections from files with no survey metadata return pixel boxes with an explicit non-georeferenced status — coordinates are never fabricated.
 
----
+## Alignment with National & Global Goals
 
-## 📂 Repository Layout
-
-```
-sonarvision/
-├── backend/                  # High-performance FastAPI REST API
-│   ├── api/                  # Analysis, metadata, health, waterfall survey, and export endpoints
-│   ├── geospatial/           # Affine coordinate matrix & EXIF GPS solvers
-│   ├── inference/            # YOLOv8-ESI ONNX engine, letterboxing, soft-NMS, acoustic context + slant-range / XTF helpers
-│   ├── reports/              # PDF, CSV, JSON intelligence report generators (+ optional NMEA/KML helpers)
-│   └── static/samples/       # Preloaded test crops for instant browser evaluation
-├── frontend/                 # Interactive React + TypeScript + Tailwind UI
-│   ├── src/components/       # Sonar viewer (+ optional live waterfall), Leaflet map, detection table, inspector
-│   ├── src/hooks/            # Lightweight UI helpers (e.g. waterfall stream controller)
-│   └── dist/                 # Built production frontend assets (generated by start.sh)
-├── models/                   # Model architectures & local ONNX target directory
-│   └── core_single_class/    # Model 1 Debris Specialist documentation
-├── reports/                  # Multi-source dataset audit logs & sensor benchmarks
-├── scripts/                  # Dataset builders (v1-v6), Colab trainers, ONNX exporter
-├── run_app.py                # Standalone Python runner
-├── start.sh                  # Unified launch script
-└── requirements.txt          # Python dependencies
-```
-
-
-
-## 🇮🇳 Alignment with National & Global Goals
-
-* 🌊 **UN SDG 14: Life Below Water**: Autonomous spatial mapping of benthic plastics and ghost gear to direct cleanup vessels to high-density debris hotspots.
-* 🛡️ **Atmanirbhar Bharat & Blue Economy**: Indigenous, sovereign deep-tech AI for naval port security, mine countermeasures, and economic zone surveillance without foreign dependencies.
+* **UN SDG 14: Life Below Water**: Autonomous spatial mapping of benthic plastics and ghost gear to direct cleanup vessels to high-density debris hotspots.
+* **Atmanirbhar Bharat & Blue Economy**: Indigenous, sovereign deep-tech AI for naval port security, mine countermeasures, and economic zone surveillance without foreign dependencies.
 
 ---
 
-## 📜 License & Acknowledgements
+## License & Acknowledgements
 
-* Released under the **MIT License**.
+* Released under the **Apache 2.0 License**.
 * Developed for **Smart India Hackathon 2026** by Team **Cold Start**.
 * Acoustic data sources: NOAA Hydrographic Survey Archives, NATO STO CMRE MILCO Benchmark, and Kaggle SSS Object Detection.
