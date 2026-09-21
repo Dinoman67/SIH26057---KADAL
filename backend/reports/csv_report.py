@@ -23,6 +23,8 @@ def generate_csv_report(
         "material_density",
         "peak_backscatter_p95",
         "estimated_height_meters",
+        "target_length_meters",
+        "target_width_meters",
         "shadow_length_meters",
         "x1",
         "y1",
@@ -37,10 +39,10 @@ def generate_csv_report(
     ])
 
     mapping = {
-        "unknown_debris": "Marine Debris",
-        "marine_debris": "Marine Debris",
+        "unknown_debris": "Entangled Net / Marine Debris",
+        "marine_debris": "Entangled Net / Marine Debris",
         "airplane": "Submerged Aircraft",
-        "mine": "Naval Mine",
+        "mine": "Cylinder / Pipe",
         "wreck": "Shipwreck",
     }
 
@@ -61,6 +63,8 @@ def generate_csv_report(
             det.get("material_density", ""),
             f"{det.get('peak_backscatter_p95', 0.0):.1f}" if det.get("peak_backscatter_p95") is not None else "",
             f"{det.get('estimated_height_meters', 0.0):.2f}" if det.get("estimated_height_meters") is not None else "",
+            f"{det.get('target_length_meters', 0.0):.2f}" if det.get("target_length_meters") is not None else "",
+            f"{det.get('target_width_meters', 0.0):.2f}" if det.get("target_width_meters") is not None else "",
             f"{det.get('shadow_length_meters', 0.0):.2f}" if det.get("shadow_length_meters") is not None else "",
             box.get("x1"),
             box.get("y1"),

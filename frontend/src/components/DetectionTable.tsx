@@ -37,11 +37,12 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
     const term = searchTerm.toLowerCase();
     const idMatch = det.id.toString().includes(term);
     const classMatch = det.class_name.toLowerCase().includes(term);
+    const typeMatch = det.object_type?.toLowerCase().includes(term) ?? false;
     const matMatch = det.material_density?.toLowerCase().includes(term) ?? false;
     const scoreMatch = det.threat_score?.toString().includes(term) ?? false;
     const latMatch = det.geolocation?.latitude?.toString().includes(term) ?? false;
     const lonMatch = det.geolocation?.longitude?.toString().includes(term) ?? false;
-    return idMatch || classMatch || matMatch || scoreMatch || latMatch || lonMatch;
+    return idMatch || classMatch || typeMatch || matMatch || scoreMatch || latMatch || lonMatch;
   });
 
   const getThreatBadge = (score: number) => {
@@ -136,10 +137,10 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
             <tr className="border-b border-slate-800 bg-slate-950/90 text-slate-400 text-[11px]">
               <th className="py-2 px-3 font-semibold">ID</th>
               <th className="py-2 px-3 font-semibold">THREAT SCORE</th>
-              <th className="py-2 px-3 font-semibold">CLASS</th>
+              <th className="py-2 px-3 font-semibold">OBJECT TYPE</th>
               <th className="py-2 px-3 font-semibold">ACOUSTIC MATERIAL</th>
               <th className="py-2 px-3 font-semibold">CONFIDENCE</th>
-              <th className="py-2 px-3 font-semibold">EST. HEIGHT</th>
+              <th className="py-2 px-3 font-semibold">DIMENSIONS (L × W × H)</th>
               <th className="py-2 px-3 font-semibold">BOUNDS [X1, Y1, X2, Y2]</th>
               <th className="py-2 px-3 font-semibold">CENTER PIXEL</th>
               <th className="py-2 px-3 font-semibold">LATITUDE</th>
@@ -182,8 +183,8 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
                         <span className="text-[9px] opacity-80 uppercase tracking-tight">[{label}]</span>
                       </span>
                     </td>
-                    <td className="py-2 px-3 capitalize font-medium text-slate-200">
-                      {det.class_name.replace('_', ' ')}
+                    <td className="py-2 px-3 font-medium text-slate-200">
+                      {det.object_type || det.class_name.replace('_', ' ')}
                     </td>
                     <td className="py-2 px-3">
                       {det.material_density ? (
@@ -207,10 +208,17 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
                         {(det.confidence * 100).toFixed(1)}%
                       </span>
                     </td>
-                    <td className="py-2 px-3">
-                      {det.estimated_height_meters !== undefined && det.estimated_height_meters !== null ? (
-                        <span className="text-amber-400 font-bold">
-                          {det.estimated_height_meters.toFixed(2)} m
+                    <td className="py-2 px-3 whitespace-nowrap">
+                      {det.target_length_meters && det.target_width_meters && det.estimated_height_meters ? (
+                        <span
+                          className="text-amber-400 font-bold font-mono"
+                          title={`Target Dimensions: ${det.target_length_meters.toFixed(2)}m (L) × ${det.target_width_meters.toFixed(2)}m (W) × ${det.estimated_height_meters.toFixed(2)}m (H relief)`}
+                        >
+                          {det.target_length_meters.toFixed(1)} × {det.target_width_meters.toFixed(1)} × {det.estimated_height_meters.toFixed(1)} m
+                        </span>
+                      ) : det.estimated_height_meters !== undefined && det.estimated_height_meters !== null ? (
+                        <span className="text-amber-400 font-bold font-mono">
+                          H: {det.estimated_height_meters.toFixed(2)} m
                         </span>
                       ) : (
                         <span className="text-slate-600">—</span>

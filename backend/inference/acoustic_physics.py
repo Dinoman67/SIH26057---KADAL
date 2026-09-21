@@ -243,8 +243,16 @@ def calculate_shadow_mensuration(
 
     estimated_height = round(float(np.clip(estimated_height, 0.15, 35.0)), 2)
 
+    # Calculate real-world physical target footprint dimensions (L x W)
+    dim_x_m = round(bw * res_x, 2)
+    dim_y_m = round(bh * res_y, 2)
+    target_length_m = max(dim_x_m, dim_y_m)
+    target_width_m = min(dim_x_m, dim_y_m)
+
     return {
         "estimated_height_meters": estimated_height,
+        "target_length_meters": target_length_m,
+        "target_width_meters": target_width_m,
         "shadow_length_meters": shadow_m,
         "shadow_length_pixels": shadow_px,
         "shadow_detected": shadow_detected,

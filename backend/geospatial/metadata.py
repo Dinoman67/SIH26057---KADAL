@@ -263,6 +263,50 @@ def _load_noaa_patch_manifest() -> Dict[str, Dict[str, Any]]:
 
         break
 
+    # Embedded exact windows for static demo assets (available even when datasets/ is unmounted)
+    sample_geo_windows = {
+        "e3_h11833_tgt014_0011": {
+            "crop_id": "E3_H11833_TGT014_0011",
+            "image_filename": "E3_H11833_TGT014_0011.png",
+            "source_tiff": "H11833_1of2.tif",
+            "crop_x": 2968,
+            "crop_y": 26664,
+            "crop_width": 512,
+            "crop_height": 512,
+            "utm_x": 262642.78,
+            "utm_y": 3200286.79,
+            "target_id": "TGT014"
+        },
+        "e3_h11833_bg_0017": {
+            "crop_id": "E3_H11833_BG_0017",
+            "image_filename": "E3_H11833_BG_0017.png",
+            "source_tiff": "H11833_1of2.tif",
+            "crop_x": 2731,
+            "crop_y": 24885,
+            "crop_width": 512,
+            "crop_height": 512,
+            "utm_x": 262524.47,
+            "utm_y": 3201176.35,
+            "target_id": "BG_0017"
+        },
+        "e3_h11833_tgt012_0001": {
+            "crop_id": "E3_H11833_TGT012_0001",
+            "image_filename": "E3_H11833_TGT012_0001.png",
+            "source_tiff": "H11833_1of2.tif",
+            "crop_x": 2850,
+            "crop_y": 25500,
+            "crop_width": 512,
+            "crop_height": 512,
+            "utm_x": 262580.0,
+            "utm_y": 3200800.0,
+            "target_id": "TGT012"
+        }
+    }
+    for k, v in sample_geo_windows.items():
+        if k not in manifest_map:
+            manifest_map[k] = v
+            manifest_map[f"{k}.png"] = v
+
     _NOAA_PATCH_CACHE = manifest_map
     return _NOAA_PATCH_CACHE
 

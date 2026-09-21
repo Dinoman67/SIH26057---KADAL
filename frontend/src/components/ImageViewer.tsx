@@ -347,8 +347,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
             {/* Detection Info */}
             <div className="border-t border-slate-800 px-3 py-2.5 font-mono text-[11px] space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-slate-500">Class</span>
-                <span className="text-slate-200 capitalize">{selectedDetection.class_name.replace('_', ' ')}</span>
+                <span className="text-slate-500">Classification</span>
+                <span className="text-slate-200 font-medium">{selectedDetection.object_type || selectedDetection.class_name.replace('_', ' ')}</span>
               </div>
               {selectedDetection.material_density && (
                 <div className="flex justify-between items-center">
@@ -368,12 +368,19 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
                   <span className="text-cyan-300 font-bold">{selectedDetection.peak_backscatter_p95.toFixed(1)} / 255</span>
                 </div>
               )}
-              {selectedDetection.estimated_height_meters !== undefined && selectedDetection.estimated_height_meters !== null && (
+              {selectedDetection.target_length_meters && selectedDetection.target_width_meters && selectedDetection.estimated_height_meters ? (
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Dimensions (L×W×H)</span>
+                  <span className="text-amber-300 font-bold font-mono">
+                    {selectedDetection.target_length_meters.toFixed(1)} × {selectedDetection.target_width_meters.toFixed(1)} × {selectedDetection.estimated_height_meters.toFixed(1)} m
+                  </span>
+                </div>
+              ) : selectedDetection.estimated_height_meters !== undefined && selectedDetection.estimated_height_meters !== null ? (
                 <div className="flex justify-between">
                   <span className="text-slate-500">Est. Height</span>
                   <span className="text-amber-400 font-bold">{selectedDetection.estimated_height_meters.toFixed(2)} m</span>
                 </div>
-              )}
+              ) : null}
               <div className="flex justify-between">
                 <span className="text-slate-500">Confidence</span>
                 <span className="text-emerald-400 font-bold">

@@ -30,6 +30,8 @@ export interface DetectionRecord {
   geolocation?: Geolocation | null;
   material_density?: string | null;
   estimated_height_meters?: number | null;
+  target_length_meters?: number | null;
+  target_width_meters?: number | null;
   peak_backscatter_p95?: number | null;
   shadow_length_meters?: number | null;
   threat_score?: number | null;
@@ -94,6 +96,7 @@ export interface AnalysisSummary {
   total_time_ms: number;
   status: string;
   message: string;
+  noise_filtering_active?: boolean;
 }
 
 export interface AnalysisResponse {

@@ -130,10 +130,10 @@ def create_pdf_report(
     inf_time = summary.get("inference_time_ms", 0.0)
 
     mapping = {
-        "unknown_debris": "Marine Debris",
-        "marine_debris": "Marine Debris",
+        "unknown_debris": "Entangled Net / Marine Debris",
+        "marine_debris": "Entangled Net / Marine Debris",
         "airplane": "Submerged Aircraft",
-        "mine": "Naval Mine",
+        "mine": "Cylinder / Pipe",
         "wreck": "Shipwreck",
     }
 
@@ -230,7 +230,7 @@ def create_pdf_report(
     # 5. Detection Summary Table
     story.append(Paragraph("3. Target Detection & Acoustic Mensuration Inventory", section_heading_style))
     
-    det_headers = ["ID", "Object / Acoustic Material", "Confidence", "Est Height", "Pixel Bounds [X1, Y1, X2, Y2]", "Latitude", "Longitude"]
+    det_headers = ["ID", "Object / Acoustic Material", "Confidence", "Dimensions (L×W×H)", "Pixel Bounds [X1, Y1, X2, Y2]", "Latitude", "Longitude"]
     det_table_data = [[Paragraph(f"<b>{h}</b>", body_style) for h in det_headers]]
 
     if len(detections) == 0:
@@ -256,8 +256,15 @@ def create_pdf_report(
             lon_str = f"{geo.get('longitude'):.6f}°" if geo.get('longitude') is not None else "N/A"
 
             mat_str = det.get("material_density") or "Unclassified"
+            l_val = det.get("target_length_meters")
+            w_val = det.get("target_width_meters")
             h_val = det.get("estimated_height_meters")
-            h_str = f"{h_val:.2f} m" if (h_val is not None and h_val > 0) else "—"
+            if l_val is not None and w_val is not None and h_val is not None:
+                dim_str = f"{l_val:.1f} × {w_val:.1f} × {h_val:.1f} m"
+            elif h_val is not None and h_val > 0:
+                dim_str = f"H: {h_val:.2f} m"
+            else:
+                dim_str = "—"
             p95_val = det.get("peak_backscatter_p95")
             p95_sub = f"<br/><font size='6.5' color='#64748b'>Backscatter P95: {p95_val:.0f}/255</font>" if p95_val is not None else ""
 
@@ -265,13 +272,13 @@ def create_pdf_report(
                 Paragraph(f"#{det.get('id'):02d}", body_style),
                 Paragraph(f"<b>{obj_type}</b><br/><font size='7' color='#0284c7'><b>{mat_str}</b></font>{p95_sub}", body_style),
                 Paragraph(f"<b>{det.get('confidence', 0)*100:.1f}%</b>", body_style),
-                Paragraph(f"<b>{h_str}</b>", highlight_style),
+                Paragraph(f"<b>{dim_str}</b>", highlight_style),
                 Paragraph(box_str, body_style),
                 Paragraph(lat_str, body_style),
                 Paragraph(lon_str, body_style),
             ])
 
-    t_dets = Table(det_table_data, colWidths=[26, 134, 48, 52, 110, 85, 85])
+    t_dets = Table(det_table_data, colWidths=[26, 134, 48, 70, 92, 85, 85])
     t_dets.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0284c7')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),

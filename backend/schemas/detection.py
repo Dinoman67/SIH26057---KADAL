@@ -30,6 +30,8 @@ class DetectionRecord(BaseModel):
     geolocation: Optional[Geolocation] = Field(None, description="Geographic coordinates if georeferenced")
     material_density: Optional[str] = Field(None, description="Classified material density: 'Hard (Metallic)' vs 'Soft (Synthetic/Plastic)'")
     estimated_height_meters: Optional[float] = Field(None, description="Hydrographic target mensuration height in meters")
+    target_length_meters: Optional[float] = Field(None, description="Physical target footprint length in meters")
+    target_width_meters: Optional[float] = Field(None, description="Physical target footprint width in meters")
     peak_backscatter_p95: Optional[float] = Field(None, description="95th percentile acoustic backscatter intensity [0-255]")
     shadow_length_meters: Optional[float] = Field(None, description="Acoustic shadow length in meters")
     threat_score: int = Field(default=0, description="Automated C2 threat score [0-100] based on material density, relief height, and confidence")
@@ -83,6 +85,7 @@ class AnalysisSummary(BaseModel):
     total_time_ms: float
     status: str
     message: str
+    noise_filtering_active: bool = Field(default=True, description="Whether adaptive Rayleigh speckle and clutter suppression is active")
 
 
 class AnalysisResponse(BaseModel):

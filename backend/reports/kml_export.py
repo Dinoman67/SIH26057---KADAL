@@ -166,6 +166,12 @@ def generate_kml_export(
         material = pt.get("material_density", "Unclassified")
         height = pt.get("estimated_height_meters")
         h_str = f"{height:.2f} m" if (height is not None and height > 0) else "Not Mensurated"
+        l_val = pt.get("target_length_meters")
+        w_val = pt.get("target_width_meters")
+        if l_val is not None and w_val is not None and height is not None and height > 0:
+            dim_str = f"{l_val:.1f} × {w_val:.1f} × {height:.1f} m"
+        else:
+            dim_str = h_str
         conf = pt.get("confidence", 0.0)
         p95 = pt.get("peak_backscatter_p95")
         p95_str = f"{p95:.1f}/255" if p95 is not None else "N/A"
@@ -186,8 +192,8 @@ def generate_kml_export(
           <table style="width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px;">
             <tr><td style="padding: 2px 4px; font-weight: bold;">Route Waypoint:</td><td>Step {order_idx + 1} of {len(route_points)}</td></tr>
             <tr><td style="padding: 2px 4px; font-weight: bold;">Acoustic Material:</td><td>{material}</td></tr>
+            <tr><td style="padding: 2px 4px; font-weight: bold;">Dimensions (L×W×H):</td><td>{dim_str}</td></tr>
             <tr><td style="padding: 2px 4px; font-weight: bold;">Peak Backscatter P95:</td><td>{p95_str}</td></tr>
-            <tr><td style="padding: 2px 4px; font-weight: bold;">Target Relief (Height):</td><td>{h_str}</td></tr>
             <tr><td style="padding: 2px 4px; font-weight: bold;">Detection Confidence:</td><td>{conf*100:.1f}%</td></tr>
             <tr><td style="padding: 2px 4px; font-weight: bold;">Latitude:</td><td>{pt['latitude']:.7f}°</td></tr>
             <tr><td style="padding: 2px 4px; font-weight: bold;">Longitude:</td><td>{pt['longitude']:.7f}°</td></tr>

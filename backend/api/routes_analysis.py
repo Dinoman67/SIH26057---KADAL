@@ -128,12 +128,12 @@ def load_image_to_numpy(image_path: str) -> Tuple[np.ndarray, np.ndarray, int, i
     return img, raw_gray, w, h, channels, None
 
 def format_object_type(class_name: str) -> str:
-    """Maps internal model class name to a clean human-readable object type."""
+    """Maps internal model class name to a clean human-readable object type aligned with SIH26057."""
     mapping = {
-        "unknown_debris": "Marine Debris",
-        "marine_debris": "Marine Debris",
+        "unknown_debris": "Entangled Net / Marine Debris",
+        "marine_debris": "Entangled Net / Marine Debris",
         "airplane": "Submerged Aircraft",
-        "mine": "Naval Mine",
+        "mine": "Cylinder / Pipe",
         "wreck": "Shipwreck",
     }
     return mapping.get(class_name.lower(), class_name.replace("_", " ").title())
@@ -227,6 +227,8 @@ def run_full_pipeline(
             geolocation=geolocation,
             material_density=d.get("material_density"),
             estimated_height_meters=d.get("estimated_height_meters"),
+            target_length_meters=d.get("target_length_meters"),
+            target_width_meters=d.get("target_width_meters"),
             peak_backscatter_p95=d.get("peak_backscatter_p95"),
             shadow_length_meters=d.get("shadow_length_meters"),
             threat_score=d.get("threat_score", 0)

@@ -19,7 +19,8 @@ from backend.inference.postprocessing import decode_detections, apply_nms, unlet
 from backend.inference.acoustic_physics import (
     classify_material_density,
     calculate_shadow_mensuration,
-    calculate_threat_score
+    calculate_threat_score,
+    soft_nms
 )
 
 def compute_sha256(filepath: str) -> str:
@@ -114,7 +115,8 @@ class YOLOESIInferenceEngine:
         self,
         img: np.ndarray,
         conf_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD,
-        iou_threshold: float = DEFAULT_IOU_THRESHOLD
+        iou_threshold: float = DEFAULT_IOU_THRESHOLD,
+        use_soft_nms: bool = True
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Runs single-pass inference with letterboxing."""
         orig_shape = img.shape[:2]
@@ -144,8 +146,11 @@ class YOLOESIInferenceEngine:
         if len(boxes_xyxy) == 0:
             return np.empty((0, 4)), np.empty((0,)), np.empty((0,), dtype=int)
 
-        # Non-Maximum Suppression
-        keep_indices = apply_nms(boxes_xyxy, scores, iou_threshold)
+        # Non-Maximum Suppression (Gaussian Soft-NMS or standard OpenCV NMS)
+        if use_soft_nms:
+            keep_indices = soft_nms(boxes_xyxy, scores, iou_threshold=iou_threshold)
+        else:
+            keep_indices = apply_nms(boxes_xyxy, scores, iou_threshold)
         if len(keep_indices) == 0:
             return np.empty((0, 4)), np.empty((0,)), np.empty((0,), dtype=int)
 
@@ -164,7 +169,8 @@ class YOLOESIInferenceEngine:
         conf_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD,
         iou_threshold: float = DEFAULT_IOU_THRESHOLD,
         tile_size: int = 256,
-        overlap: int = 64
+        overlap: int = 64,
+        use_soft_nms: bool = True
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Runs sliced / tiled inference for high resolution imagery and aggregates via global NMS."""
         tiles = generate_tiles(img, tile_size=tile_size, overlap=overlap)
@@ -180,7 +186,8 @@ class YOLOESIInferenceEngine:
             boxes, scores, class_ids = self.infer_single_image(
                 tile_img,
                 conf_threshold=conf_threshold,
-                iou_threshold=iou_threshold
+                iou_threshold=iou_threshold,
+                use_soft_nms=use_soft_nms
             )
 
             if len(boxes) > 0:
@@ -199,7 +206,8 @@ class YOLOESIInferenceEngine:
             global_boxes, global_scores, global_classes = self.infer_single_image(
                 img,
                 conf_threshold=conf_threshold,
-                iou_threshold=iou_threshold
+                iou_threshold=iou_threshold,
+                use_soft_nms=use_soft_nms
             )
             if len(global_boxes) > 0:
                 all_boxes.append(global_boxes)
@@ -213,8 +221,11 @@ class YOLOESIInferenceEngine:
         merged_scores = np.concatenate(all_scores)
         merged_class_ids = np.concatenate(all_class_ids)
 
-        # Global NMS across all tiles
-        keep_indices = apply_nms(merged_boxes, merged_scores, iou_threshold)
+        # Global NMS across all tiles (Gaussian Soft-NMS or standard OpenCV NMS)
+        if use_soft_nms:
+            keep_indices = soft_nms(merged_boxes, merged_scores, iou_threshold=iou_threshold)
+        else:
+            keep_indices = apply_nms(merged_boxes, merged_scores, iou_threshold)
         if len(keep_indices) == 0:
             return np.empty((0, 4)), np.empty((0,)), np.empty((0,), dtype=int)
 
@@ -226,6 +237,7 @@ class YOLOESIInferenceEngine:
         conf_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD,
         iou_threshold: float = DEFAULT_IOU_THRESHOLD,
         use_tiling: Optional[bool] = None,
+        use_soft_nms: bool = True,
         raw_gray: Optional[np.ndarray] = None,
         towfish_altitude_m: Optional[float] = None,
         pixel_resolution: Optional[Tuple[float, float]] = None
@@ -252,9 +264,19 @@ class YOLOESIInferenceEngine:
 
         t_inf_start = time.perf_counter()
         if use_tiling:
-            boxes, scores, class_ids = self.infer_tiled(img, conf_threshold, iou_threshold)
+            boxes, scores, class_ids = self.infer_tiled(
+                img,
+                conf_threshold=conf_threshold,
+                iou_threshold=iou_threshold,
+                use_soft_nms=use_soft_nms
+            )
         else:
-            boxes, scores, class_ids = self.infer_single_image(img, conf_threshold, iou_threshold)
+            boxes, scores, class_ids = self.infer_single_image(
+                img,
+                conf_threshold=conf_threshold,
+                iou_threshold=iou_threshold,
+                use_soft_nms=use_soft_nms
+            )
         t_inf_end = time.perf_counter()
 
         inference_time_ms = round((t_inf_end - t_inf_start) * 1000.0, 2)
@@ -305,6 +327,8 @@ class YOLOESIInferenceEngine:
                 "material_density": mat_info["material_density"],
                 "peak_backscatter_p95": mat_info["peak_backscatter_p95"],
                 "estimated_height_meters": mens_info["estimated_height_meters"],
+                "target_length_meters": mens_info.get("target_length_meters"),
+                "target_width_meters": mens_info.get("target_width_meters"),
                 "shadow_length_meters": mens_info["shadow_length_meters"],
                 "threat_score": threat_score,
                 "acoustic_telemetry": {

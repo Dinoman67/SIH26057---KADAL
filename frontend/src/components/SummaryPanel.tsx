@@ -6,6 +6,14 @@ interface SummaryPanelProps {
   analysis: AnalysisResponse | null;
 }
 
+const CLASS_LABELS: Record<string, string> = {
+  unknown_debris: 'Entangled Net / Marine Debris',
+  marine_debris: 'Entangled Net / Marine Debris',
+  airplane: 'Submerged Aircraft',
+  mine: 'Cylinder / Pipe',
+  wreck: 'Shipwreck',
+};
+
 export const SummaryPanel: React.FC<SummaryPanelProps> = ({ analysis }) => {
   if (!analysis) {
     return (
@@ -116,7 +124,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ analysis }) => {
               return (
                 <div key={cname} className="flex flex-col gap-0.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-200 capitalize">{cname.replace('_', ' ')}</span>
+                    <span className="text-slate-200">{CLASS_LABELS[cname.toLowerCase()] || cname.replace('_', ' ')}</span>
                     <span className="text-cyan-300 font-bold">{count}</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
