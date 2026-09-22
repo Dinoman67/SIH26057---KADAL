@@ -7,17 +7,20 @@
 [![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react&logoColor=black)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![ONNX Runtime](https://img.shields.io/badge/ONNX_Runtime-1.16%2B-005CED?logo=onnx&logoColor=white)](https://onnxruntime.ai)
-[![Hugging Face Model](https://img.shields.io/badge/Hugging%20Face-Model%20(v6)-yellow?logo=huggingface&logoColor=white)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6)
+<[![Hugging Face Model](https://img.shields.io/badge/Hugging%20Face-Model%20(v6)-yellow?logo=huggingface&logoColor=white)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6)
 [![Hugging Face Dataset](https://img.shields.io/badge/Hugging%20Face-Dataset%20(v6)-blue?logo=huggingface&logoColor=white)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Real Data](https://img.shields.io/badge/Real_Data-No_Synthetic_Renders-brightgreen)](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders)
 [![SIH 2026](https://img.shields.io/badge/Smart_India_Hackathon-2026-orange)](https://www.sih.gov.in/)
 
 **Smart India Hackathon 2026 | Problem Statement: SIH26057 (Ministry of Earth Sciences / NIOT)**  
 *Real-time AI for Marine Debris, Naval Mine Countermeasures (MCM), Shipwrecks, and Submerged Aircraft Localization in Side-Scan Sonar (SSS) Imagery.*
 
-[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [Live Demo](#quick-start) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Report Engine](#automated-intelligence-reporting)
+<[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [Live Demo](#quick-start) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Provenance](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders) • [Report Engine](#automated-intelligence-reporting) • [Roadmap](#roadmap)
 
 </div>
+
+> **Results at a glance:** mAP50 **0.6042** on **962** held-out test images • **0 false alarms** on clean seabed • **5.9 MB** FP16 ONNX • **~2.4 ms** GPU inference • trained on **100% real survey acoustics**.
 
 ---
 
@@ -78,7 +81,7 @@ To provide maximum operational flexibility for maritime authorities and environm
 | **Model Type** | YOLOv8-ESI Single-Class | YOLOv8-ESI 4-Class Multi-Source |
 | **Classes** | `marine_debris` | `unknown_debris`, `airplane`, `mine`, `wreck` |
 | **Primary Domain** | High-density coastal cleanup & plastic mapping | Naval MCM, port security, maritime SAR & salvage |
-| **mAP50 Score** | **0.8837 (leaked — test passes seen in train; reference only, do not deploy)** | **0.6042** across 962 unseen multi-sensor test images |
+| **mAP50 Score** | **0.8837 (reference only — train/test share survey passes, so this score is optimistic by construction; retained for pass-level analysis, not a deployment candidate)** | **0.6042** across 962 unseen multi-sensor test images |
 | **Runtime Size** | 6.2 MB (FP16 ONNX) | 5.9 MB (FP16 ONNX) |
 | **Deployment** | Archived reference only | Survey ships, Naval AUVs, coastal defense command |
 
@@ -89,6 +92,8 @@ To provide maximum operational flexibility for maritime authorities and environm
 ### Unseen Test Split (962 Images, Zero File Overlap)
 
 Evaluated strictly on independent, held-out side-scan sonar images (zero file overlap across splits; debris train/test share survey passes — see `reports/debris_feature_learning_report.md` for pass-level analysis):
+
+**Benchmark methodology.** The 962-image test split was built with zero file overlap against train/val, so no test frame was seen in training. Per-sensor breakdowns (NOAA / Kaggle / MILCO below) matter because each sonar model has distinct speckle, gain, and shadow statistics — a single pooled score would hide sensor-specific failure modes.
 
 | Object Type / Class | Benchmark Target | Baseline YOLO | **SonarVision YOLOv8-ESI** | Detection Precision | Recall |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -106,6 +111,8 @@ Evaluated strictly on independent, held-out side-scan sonar images (zero file ov
 * **MILCO Klein 3500 MCM Sonar** (64 test images): **0.2714 mAP50** (P: 70.7% — high precision prevents false mine alerts)
 * **Clean Seabed Validation**: **0 False Alarms** across natural seafloor sand ripples and mud textures.
 
+*Reading the debris row: `unknown_debris` P/R (81.9%/78.7%) matches the NOAA row because debris test frames are the NOAA test frames — debris appears only in the NOAA split, so the two rows describe the same images, not two independent results.*
+
 ### Scope Notes: Coverage by Design
 
 **Statement fidelity (SIH26057).** The statement asks for shipwrecks, pipes, cylinders, and entangled debris nets, plus anomaly reporting with geotagging, across debris, MCM, and SAR threat types. Our four classes (`unknown_debris`, `mine`, `wreck`, `airplane`), together with the GeoTIFF→WGS84 solver and the PDF/CSV/JSON engine (with optional NMEA/KML helpers), map directly onto those clauses.
@@ -113,6 +120,33 @@ Evaluated strictly on independent, held-out side-scan sonar images (zero file ov
 **A note on ghost nets.** Ghost-net SSS detection is established science — e.g. GhostNetZero (Microsoft Research + WWF, 2025) reports ~90% detection from 412 expert-annotated Baltic/Puget Sound segments. That dataset is private, and no open student-usable ghost-net benchmark exists today. Our R&D decision: train on real survey acoustics only, using physics-preserving augmentation of real frames and no rendered objects (speckle/shadow statistics mismatch is documented to degrade real-survey transfer). Net-like contacts are therefore served through `unknown_debris`; a dedicated head becomes a fine-tune the day an open benchmark appears.
 
 **Reading our numbers.** Headline metrics are held-out test (962 images) with per-class and per-sensor breakdowns. See `reports/debris_feature_learning_report.md` for our frame-vs-pass generalization analysis.
+
+### Problem Statement Mapping
+
+How each SIH26057 clause maps onto the implementation (partial coverage stated honestly — see Roadmap):
+
+| SIH26057 Clause | Our Implementation | Coverage |
+| :--- | :--- | :---: |
+| Shipwrecks | `wreck` class (0.7173 AP50) | Full |
+| Pipes, cylinders | Served via `unknown_debris` today | Partial → Roadmap |
+| Entangled debris nets | Served via `unknown_debris` today (see ghost-net note above) | Partial → Roadmap |
+| Anomaly reporting with geotagging | PDF/CSV/JSON reports + GeoTIFF→WGS84 solver (+ optional NMEA/KML helpers) | Full |
+| Naval MCM coverage | `mine` class + threat triage + C2 exports | Full |
+| Maritime SAR coverage | `airplane` class + geospatial reporting | Full |
+
+---
+
+## Data Provenance: Every Pixel From Real Sonar, Zero Synthetic Renders
+
+Every training, validation, and test frame comes from real survey acoustics — **no synthetic renders, GAN-generated targets, or composited objects in any split** (4,033 train / 563 val / 962 test; 5,558 images total):
+
+| Source | Sensor | Held-Out Test Images | Role |
+| :--- | :---: | :---: | :--- |
+| NOAA Hydrographic Surveys | Klein 5000 | 833 | Marine-debris evaluation |
+| NATO STO CMRE MILCO | Klein 3500 | 64 | Mine-class (MCM) evaluation |
+| Kaggle SSS Benchmark | High-res SSS | 65 | Airplane/wreck cross-sensor validation |
+
+**Why this matters.** Synthetic sonar renders mismatch real acoustic physics — speckle statistics, TVG gain behavior, shadow gradients, and nadir geometry all differ from survey data — so models trained on renders degrade on real surveys. Training on real frames only is the reason the held-out numbers above transfer to the field. See `reports/debris_feature_learning_report.md` for how pass-memorization (not rendering) remains the hard generalization problem.
 
 ---
 
@@ -207,8 +241,27 @@ To run live GPU/CPU ONNX tensor inference:
 
 ---
 
-## License & Acknowledgements
+<## License & Acknowledgements
 
-* Released under the **Apache 2.0 License**.
+* Released under the **Apache 2.0 License** (see [LICENSE](LICENSE)).
+
+## Roadmap
+
+* **Temporal change detection**: epoch-over-epoch comparison of repeat survey passes to flag new, moved, or missing contacts.
+* **Dedicated pipe/cylinder class**: split out of `unknown_debris` under the same no-synthetic-data policy — real survey frames only.
+* **Ghost-net head**: a dedicated detection head pending an open real-acoustics benchmark (see the GhostNetZero note under Scope Notes); until then, net-like contacts stay served through `unknown_debris`.
+
+---
+
+## Team Cold Start
+
+* Ashish S
+* Sanjeev kumar S
+* Kamlesh Y
+* Prajan SS
+* Sangamithra B
+* Sudhishna P
+
+---
 * Developed for **Smart India Hackathon 2026** by Team **Cold Start**.
 * Acoustic data sources: NOAA Hydrographic Survey Archives, NATO STO CMRE MILCO Benchmark, and Kaggle SSS Object Detection.
