@@ -162,6 +162,9 @@ KADAL bridges raw AI detections with hydrographic GIS operations by generating i
 5. **Optional Field Exports (supporting)**: NMEA 0183 `$GPWPL` waypoints (`waypoints.txt`) and Google Earth KML dive-plan (`dive_plan.kml`) helpers under `/api/export`, for teams that already use ECDIS/chartplotters.
 6. **Supporting Detection Context (optional)**: Acoustic backscatter/shadow context, threat ordering, and slant-range / XTF ingestion helpers (`backend/inference/`, `backend/reports/`) are available alongside the core detector.
 7. **Optional Live Waterfall View (supporting demo)**: The viewer also offers a simulated transect mode alongside static analysis, reusing the same table/map panels; simulated contacts are labeled and kept separate from real analysis exports.
+8. **Operator Review Queue**: Confirm/Reject verdicts per detection in the inventory table (persisted per analysis via `PATCH /api/export/{id}/verdicts`); verdicts are stamped into `detections.csv`/`results.json`, and the summary shows confirmed/rejected/pending counts.
+9. **Evidence Bundle**: One-click ZIP (`GET /api/export/{id}/bundle`) with annotated/evidence/colormap imagery plus CSV, JSON, PDF, NMEA, and KML.
+10. **Position Uncertainty**: Every georeferenced detection carries a conservative search radius (half max box-dimension × pixel resolution, method-labeled) shown on the map, in the table, and in CSV — a planning aid, never field-validated.
 
 ---
 

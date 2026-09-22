@@ -221,6 +221,14 @@ export const MapView: React.FC<MapViewProps> = ({
             <div style="margin-bottom: 3px;">
               <span style="color: #94a3b8;">CRS:</span> <span style="color: #38bdf8;">${crs}</span>
             </div>
+            ${det.uncertainty_meters !== undefined && det.uncertainty_meters !== null ? `
+            <div style="margin-bottom: 3px;">
+              <span style="color: #94a3b8;">Search radius:</span> <span style="color: #fbbf24;">±${det.uncertainty_meters.toFixed(2)} m</span>
+            </div>` : ''}
+            ${det.review_verdict ? `
+            <div style="margin-bottom: 3px;">
+              <span style="color: #94a3b8;">Review:</span> <span style="color: ${det.review_verdict === 'confirmed' ? '#34d399' : '#f87171'}; font-weight: bold;">${det.review_verdict.toUpperCase()}</span>
+            </div>` : ''}
             <div style="margin-top: 4px; padding-top: 4px; border-top: 1px dashed #334155; font-size: 10px; color: #64748b;">
               Source: ${coordinate_source}
             </div>

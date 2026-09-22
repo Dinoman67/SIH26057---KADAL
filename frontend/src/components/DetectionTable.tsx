@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Search, Compass, Route } from 'lucide-react';
-import type { DetectionRecord } from '../types';
+import { Table, Search, Compass, Route, Check, X } from 'lucide-react';
+import type { DetectionRecord, VerdictMap } from '../types';
 
 interface DetectionTableProps {
   detections: DetectionRecord[];
@@ -11,6 +11,8 @@ interface DetectionTableProps {
   analysisId?: string | null;
   nmeaExportUrl?: string | null;
   kmlExportUrl?: string | null;
+  verdicts?: VerdictMap;
+  onVerdictDetection?: (id: number, verdict: 'confirmed' | 'rejected' | null) => void;
 }
 
 export const DetectionTable: React.FC<DetectionTableProps> = ({
@@ -22,8 +24,14 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
   analysisId,
   nmeaExportUrl,
   kmlExportUrl,
+  verdicts = {},
+  onVerdictDetection,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const reviewEnabled = typeof onVerdictDetection === 'function';
+  const verdictOf = (det: DetectionRecord) => verdicts[det.id] ?? det.review_verdict ?? null;
+  const confirmedCount = detections.filter((d) => verdictOf(d) === 'confirmed').length;
+  const rejectedCount = detections.filter((d) => verdictOf(d) === 'rejected').length;
 
   // Automatically sort detections descending by threat_score (with confidence tie-breaker)
   const sortedDetections = [...detections].sort((a, b) => {
@@ -83,6 +91,13 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
           <span className="font-bold uppercase tracking-wider text-slate-200 font-mono-tech">
             Target Detection & Mensuration Inventory ({detections.length})
           </span>
+          {reviewEnabled && hasDetections && (
+            <span className="text-[10px] font-mono" title="Operator review decisions">
+              <span className="text-emerald-400 font-bold">✓{confirmedCount}</span>
+              <span className="text-slate-600"> / </span>
+              <span className="text-red-400 font-bold">✗{rejectedCount}</span>
+            </span>
+          )}
         </div>
 
         {/* C2 Operational Export Actions & Search */}
@@ -145,6 +160,7 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
               <th className="py-2 px-3 font-semibold">CENTER PIXEL</th>
               <th className="py-2 px-3 font-semibold">LATITUDE</th>
               <th className="py-2 px-3 font-semibold">LONGITUDE</th>
+              {reviewEnabled && <th className="py-2 px-3 font-semibold">REVIEW</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60">
@@ -232,8 +248,18 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
                     </td>
                     <td className="py-2 px-3">
                       {det.geolocation?.latitude !== undefined && det.geolocation?.latitude !== null ? (
-                        <span className="text-emerald-400 font-semibold">
-                          {det.geolocation.latitude.toFixed(7)}°
+                        <span className="flex flex-col">
+                          <span className="text-emerald-400 font-semibold">
+                            {det.geolocation.latitude.toFixed(7)}°
+                          </span>
+                          {det.uncertainty_meters !== undefined && det.uncertainty_meters !== null && (
+                            <span
+                              className="text-[10px] text-slate-500"
+                              title={det.uncertainty_method || 'Position search radius'}
+                            >
+                              ±{det.uncertainty_meters.toFixed(2)} m
+                            </span>
+                          )}
                         </span>
                       ) : (
                         <span className="text-slate-600">—</span>
@@ -248,12 +274,42 @@ export const DetectionTable: React.FC<DetectionTableProps> = ({
                         <span className="text-slate-600">—</span>
                       )}
                     </td>
+                    {reviewEnabled && (
+                      <td className="py-2 px-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            title="Confirm target"
+                            onClick={() => onVerdictDetection!(det.id, verdictOf(det) === 'confirmed' ? null : 'confirmed')}
+                            className={`p-1 rounded border transition-all ${
+                              verdictOf(det) === 'confirmed'
+                                ? 'bg-emerald-500/30 border-emerald-400 text-emerald-300'
+                                : 'bg-slate-950/40 border-slate-700 text-slate-500 hover:text-emerald-300 hover:border-emerald-600'
+                            }`}
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            title="Reject target"
+                            onClick={() => onVerdictDetection!(det.id, verdictOf(det) === 'rejected' ? null : 'rejected')}
+                            className={`p-1 rounded border transition-all ${
+                              verdictOf(det) === 'rejected'
+                                ? 'bg-red-500/30 border-red-400 text-red-300'
+                                : 'bg-slate-950/40 border-slate-700 text-slate-500 hover:text-red-300 hover:border-red-600'
+                            }`}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={10} className="text-center py-6 text-slate-500">
+                <td colSpan={reviewEnabled ? 11 : 10} className="text-center py-6 text-slate-500">
                   {detections.length === 0 ? 'No objects detected above the confidence threshold.' : 'No matching detections found.'}
                 </td>
               </tr>

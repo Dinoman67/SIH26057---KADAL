@@ -74,6 +74,33 @@ def pixel_to_geographic(
     except Exception:
         return None
 
+def estimate_position_uncertainty(
+    bbox: Dict[str, Any],
+    pixel_resolution: Any,
+) -> Tuple[Optional[float], Optional[str]]:
+    """
+    Conservative position search radius for a georeferenced detection:
+    half the max box dimension multiplied by pixel resolution.
+    Returns (uncertainty_meters, method) or (None, None) when the
+    resolution is unknown. Never field-validated — a planning aid, not a claim.
+    """
+    try:
+        if not pixel_resolution:
+            return None, None
+        rx, ry = float(pixel_resolution[0]), float(pixel_resolution[1])
+        if rx <= 0 or ry <= 0:
+            return None, None
+        w = abs(float(bbox.get("x2", 0)) - float(bbox.get("x1", 0)))
+        h = abs(float(bbox.get("y2", 0)) - float(bbox.get("y1", 0)))
+        if w <= 0 or h <= 0:
+            return None, None
+        unc = round(max(rx, ry) * max(w, h) * 0.5, 2)
+        method = "half max box-dimension x pixel resolution (conservative search radius; not field-validated)"
+        return unc, method
+    except Exception:
+        return None, None
+
+
 def compute_crop_transform(
     parent_transform: Affine,
     col_offset: float,

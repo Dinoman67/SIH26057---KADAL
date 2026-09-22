@@ -48,6 +48,9 @@ class DetectionRecord(BaseModel):
     peak_backscatter_p95: Optional[float] = Field(None, description="95th percentile acoustic backscatter intensity [0-255]")
     shadow_length_meters: Optional[float] = Field(None, description="Acoustic shadow length in meters")
     threat_score: int = Field(default=0, description="Automated C2 threat score [0-100] based on material density, relief height, and confidence")
+    uncertainty_meters: Optional[float] = Field(None, description="Conservative position search radius in meters (half max box-dimension x pixel resolution); None when not georeferenced")
+    uncertainty_method: Optional[str] = Field(None, description="Method used to derive uncertainty_meters")
+    review_verdict: Optional[str] = Field(None, description="Operator review verdict: 'confirmed', 'rejected', or None (pending)")
 
 class FileMetadata(BaseModel):
     filename: str
@@ -119,3 +122,4 @@ class AnalysisResponse(BaseModel):
     pdf_report_url: str
     nmea_export_url: Optional[str] = None
     kml_export_url: Optional[str] = None
+    bundle_export_url: Optional[str] = None

@@ -1,9 +1,10 @@
 import React from 'react';
-import { ShieldCheck, AlertTriangle, Target, Percent, Clock, Tag } from 'lucide-react';
-import type { AnalysisResponse } from '../types';
+import { ShieldCheck, AlertTriangle, Target, Percent, Clock, Tag, ClipboardCheck } from 'lucide-react';
+import type { AnalysisResponse, VerdictMap } from '../types';
 
 interface SummaryPanelProps {
   analysis: AnalysisResponse | null;
+  verdicts?: VerdictMap;
 }
 
 const CLASS_LABELS: Record<string, string> = {
@@ -14,7 +15,7 @@ const CLASS_LABELS: Record<string, string> = {
   wreck: 'Shipwreck',
 };
 
-export const SummaryPanel: React.FC<SummaryPanelProps> = ({ analysis }) => {
+export const SummaryPanel: React.FC<SummaryPanelProps> = ({ analysis, verdicts = {} }) => {
   if (!analysis) {
     return (
       <div className="bg-slate-900/80 border border-slate-800 rounded p-4 flex flex-col items-center justify-center min-h-[220px] text-center text-slate-500 font-mono text-xs">
@@ -27,6 +28,9 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ analysis }) => {
 
   const { summary } = analysis;
   const isDebrisDetected = summary.debris_detected;
+  const confirmedCount = analysis.detections.filter((d) => (verdicts[d.id] ?? d.review_verdict) === 'confirmed').length;
+  const rejectedCount = analysis.detections.filter((d) => (verdicts[d.id] ?? d.review_verdict) === 'rejected').length;
+  const pendingCount = summary.total_detections - confirmedCount - rejectedCount;
 
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded p-4 flex flex-col gap-3 font-mono">
@@ -105,6 +109,19 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ analysis }) => {
             {summary.inference_time_ms.toFixed(1)} ms
           </p>
         </div>
+      </div>
+
+      {/* Operator Review Status */}
+      <div className="bg-slate-950/40 border border-slate-800/80 rounded p-2.5 flex items-center justify-between text-xs">
+        <span className="flex items-center gap-1.5 text-slate-400 font-semibold text-[11px]">
+          <ClipboardCheck className="h-3.5 w-3.5 text-cyan-400" />
+          Operator Review
+        </span>
+        <span className="flex items-center gap-2 font-mono">
+          <span className="text-emerald-300 font-bold" title="Confirmed targets">✓{confirmedCount}</span>
+          <span className="text-red-300 font-bold" title="Rejected targets">✗{rejectedCount}</span>
+          <span className="text-slate-500" title="Pending review">○{pendingCount}</span>
+        </span>
       </div>
 
       {/* Detected Classes Breakdown */}

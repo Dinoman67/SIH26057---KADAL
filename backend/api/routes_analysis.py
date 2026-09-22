@@ -22,7 +22,7 @@ from backend.config import (
 from backend.inference.engine import YOLOESIInferenceEngine
 from backend.inference.xtf_parser import parse_xtf_file
 from backend.geospatial.metadata import extract_geospatial_metadata
-from backend.geospatial.coordinates import pixel_to_geographic
+from backend.geospatial.coordinates import pixel_to_geographic, estimate_position_uncertainty
 from backend.utils.annotator import draw_annotations, generate_detection_only_view, apply_pseudo_colormap, generate_evidence_panel
 from backend.utils.file_validator import validate_and_save_upload, validate_and_save_sidecars
 from backend.reports.pdf_report import create_pdf_report
@@ -208,6 +208,10 @@ def run_full_pipeline(
         )
         geolocation = Geolocation(**geo_dict) if geo_dict else None
 
+        # Conservative position search radius (only meaningful when georeferenced)
+        unc_meters, unc_method = (estimate_position_uncertainty(d["bbox"], pixel_res)
+                                  if geolocation else (None, None))
+
         detections_list.append(DetectionRecord(
             id=d["id"],
             class_id=cid,
@@ -223,7 +227,10 @@ def run_full_pipeline(
             target_width_meters=d.get("target_width_meters"),
             peak_backscatter_p95=d.get("peak_backscatter_p95"),
             shadow_length_meters=d.get("shadow_length_meters"),
-            threat_score=d.get("threat_score", 0)
+            threat_score=d.get("threat_score", 0),
+            uncertainty_meters=unc_meters,
+            uncertainty_method=unc_method,
+            review_verdict=None
         ))
 
     # 5. Generate Visualizations
@@ -362,7 +369,8 @@ def run_full_pipeline(
         json_export_url=f"/api/export/{analysis_id}/json",
         pdf_report_url=f"/api/export/{analysis_id}/pdf",
         nmea_export_url=f"/api/export/{analysis_id}/nmea",
-        kml_export_url=f"/api/export/{analysis_id}/kml"
+        kml_export_url=f"/api/export/{analysis_id}/kml",
+        bundle_export_url=f"/api/export/{analysis_id}/bundle"
     )
 
 @router.post("/analyze", response_model=AnalysisResponse)

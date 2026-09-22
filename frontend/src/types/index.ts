@@ -35,7 +35,14 @@ export interface DetectionRecord {
   peak_backscatter_p95?: number | null;
   shadow_length_meters?: number | null;
   threat_score?: number | null;
+  uncertainty_meters?: number | null;
+  uncertainty_method?: string | null;
+  review_verdict?: 'confirmed' | 'rejected' | null;
 }
+
+export type ReviewVerdict = 'confirmed' | 'rejected';
+
+export type VerdictMap = Record<number, ReviewVerdict>;
 
 export interface FileMetadata {
   filename: string;
@@ -117,6 +124,7 @@ export interface AnalysisResponse {
   pdf_report_url: string;
   nmea_export_url?: string;
   kml_export_url?: string;
+  bundle_export_url?: string;
 }
 
 export interface SampleItem {

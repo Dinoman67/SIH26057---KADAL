@@ -14,10 +14,12 @@ import {
   fetchModelInfo,
   fetchSamples,
   fetchWaterfallSurveys,
+  fetchVerdicts,
+  saveVerdicts,
   analyzeImage,
   analyzeSample,
 } from './services/api';
-import type { AnalysisResponse, DetectionRecord, ModelMetadata, SampleItem, WaterfallSurvey, WaterfallTarget } from './types';
+import type { AnalysisResponse, DetectionRecord, ModelMetadata, SampleItem, VerdictMap, WaterfallSurvey, WaterfallTarget } from './types';
 import { waterfallTargetToDetection } from './types';
 import { AlertTriangle, X } from 'lucide-react';
 
@@ -42,6 +44,60 @@ export function App() {
   const [hoveredDetectionId, setHoveredDetectionId] = useState<number | null>(null);
   const [selectedDetectionId, setSelectedDetectionId] = useState<number | null>(null);
 
+  // Operator review verdicts (confirmed/rejected per detection id)
+  const [verdicts, setVerdicts] = useState<VerdictMap>({});
+
+  const verdictKey = (id: string) => `kadal_verdicts_${id}`;
+
+  // Load stored verdicts whenever a new analysis arrives
+  useEffect(() => {
+    const id = analysis?.analysis_id;
+    if (!id) {
+      setVerdicts({});
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      let merged: VerdictMap = {};
+      try {
+        const saved = localStorage.getItem(verdictKey(id));
+        if (saved) {
+          const raw = JSON.parse(saved) as Record<string, string>;
+          for (const [k, v] of Object.entries(raw)) {
+            if (v === 'confirmed' || v === 'rejected') merged[Number(k)] = v;
+          }
+        }
+      } catch { /* corrupted cache: ignore */ }
+      try {
+        const server = await fetchVerdicts(id);
+        merged = { ...merged, ...server };
+      } catch { /* offline or no verdicts yet */ }
+      if (!cancelled) setVerdicts(merged);
+    })();
+    return () => { cancelled = true; };
+  }, [analysis?.analysis_id]);
+
+  const handleVerdict = async (detId: number, verdict: 'confirmed' | 'rejected' | null) => {
+    const id = analysis?.analysis_id;
+    const next = { ...verdicts };
+    if (verdict) next[detId] = verdict;
+    else delete next[detId];
+    setVerdicts(next);
+    if (!id) return;
+    try {
+      localStorage.setItem(verdictKey(id), JSON.stringify(next));
+    } catch { /* storage unavailable */ }
+    try {
+      const server = await saveVerdicts(id, next);
+      setVerdicts(server);
+      try {
+        localStorage.setItem(verdictKey(id), JSON.stringify(server));
+      } catch { /* storage unavailable */ }
+    } catch (err: any) {
+      console.error('Verdict save failed:', err);
+      setError('Could not persist review verdict — retry.');
+    }
+  };
   // Live waterfall (simulated transect; isolated from real analysis/exports)
   const [displayMode, setDisplayMode] = useState<'static' | 'waterfall'>('static');
   const [waterfallSurveys, setWaterfallSurveys] = useState<WaterfallSurvey[]>([]);
@@ -134,7 +190,11 @@ export function App() {
     if (mode === 'waterfall') setSimDetections([]);
   };
 
-  const visibleDetections = displayMode === 'waterfall' ? simDetections : analysis?.detections ?? [];
+  const staticDetections = (analysis?.detections ?? []).map((d) =>
+    verdicts[d.id] ? { ...d, review_verdict: verdicts[d.id] } : d
+  );
+  const visibleDetections = displayMode === 'waterfall' ? simDetections : staticDetections;
+  const reviewActive = displayMode !== 'waterfall';
 
   if (showLanding) {
     return <LandingPage onLaunch={() => setShowLanding(false)} />;
@@ -220,12 +280,14 @@ export function App() {
               analysisId={analysis?.analysis_id}
               nmeaExportUrl={analysis?.nmea_export_url}
               kmlExportUrl={analysis?.kml_export_url}
+              verdicts={reviewActive ? verdicts : {}}
+              onVerdictDetection={reviewActive ? handleVerdict : undefined}
             />
           </div>
 
           {/* Right Column: Summary KPI & Cartographic Map */}
           <div className="lg:col-span-3 flex flex-col gap-4">
-            <SummaryPanel analysis={analysis} />
+            <SummaryPanel analysis={analysis} verdicts={reviewActive ? verdicts : {}} />
 
             <MapView
               analysis={analysis}

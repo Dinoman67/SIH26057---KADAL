@@ -1,15 +1,43 @@
 import os
 import json
+import zipfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Query, Response
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 
 from backend.config import RESULTS_DIR
 from backend.reports.nmea_export import generate_nmea_export
 from backend.reports.kml_export import generate_kml_export
+from backend.reports.csv_report import generate_csv_report
 
 router = APIRouter(prefix="/export", tags=["Exports"])
+
+VALID_VERDICTS = {"confirmed", "rejected"}
+
+
+class VerdictUpdate(BaseModel):
+    verdicts: Dict[str, str]
+
+
+def get_analysis_dir(analysis_id: str) -> Path:
+    analysis_dir = RESULTS_DIR / analysis_id
+    if not analysis_dir.exists():
+        raise HTTPException(status_code=404, detail=f"Analysis '{analysis_id}' not found.")
+    return analysis_dir
+
+
+def load_verdicts(analysis_id: str) -> Dict[str, str]:
+    verdict_file = get_analysis_dir(analysis_id) / "verdicts.json"
+    if not verdict_file.exists():
+        return {}
+    try:
+        data = json.loads(verdict_file.read_text())
+        return {str(k): v for k, v in data.items()
+                if v in VALID_VERDICTS}
+    except Exception:
+        return {}
 
 
 def get_latest_analysis_id() -> str:
@@ -169,3 +197,88 @@ async def get_colormap_image(analysis_id: str):
 @router.get("/{analysis_id}/evidence")
 async def get_evidence_image(analysis_id: str):
     return get_result_file(analysis_id, "evidence.png", "image/png")
+
+
+# -------------------------------------------------------------------------
+# Operator Review Verdicts (PATCH/GET /api/export/{analysis_id}/verdicts)
+# -------------------------------------------------------------------------
+
+def _refresh_review_artifacts(analysis_id: str, verdicts: Dict[str, str]) -> Dict[str, int]:
+    """Persists verdicts, stamps them into results.json + detections.csv."""
+    analysis_dir = get_analysis_dir(analysis_id)
+    (analysis_dir / "verdicts.json").write_text(json.dumps(verdicts, indent=2))
+
+    results_file = analysis_dir / "results.json"
+    counts = {"confirmed": 0, "rejected": 0, "pending": 0}
+    if results_file.exists():
+        try:
+            data = json.loads(results_file.read_text())
+            dets = data.get("detections", [])
+            for det in dets:
+                v = verdicts.get(str(det.get("id")))
+                det["review_verdict"] = v
+                counts["confirmed" if v == "confirmed" else "rejected" if v == "rejected" else "pending"] += 1
+            results_file.write_text(json.dumps(data, indent=2, default=str))
+            geo_meta = data.get("geospatial_metadata", {})
+            (analysis_dir / "detections.csv").write_text(
+                generate_csv_report(dets, geo_meta, verdicts))
+        except Exception:
+            pass
+    return counts
+
+
+@router.get("/{analysis_id}/verdicts")
+async def get_review_verdicts(analysis_id: str):
+    """Returns stored operator review verdicts for an analysis."""
+    return {"analysis_id": analysis_id, "verdicts": load_verdicts(analysis_id)}
+
+
+@router.patch("/{analysis_id}/verdicts")
+async def save_review_verdicts(analysis_id: str, update: VerdictUpdate):
+    """
+    Stores operator review verdicts ({detection_id: 'confirmed'|'rejected';
+    'pending'/null clears}) and stamps them into results.json + detections.csv.
+    """
+    get_analysis_dir(analysis_id)
+    cleaned: Dict[str, str] = {}
+    for k, v in (update.verdicts or {}).items():
+        if v in VALID_VERDICTS:
+            cleaned[str(k)] = v
+        # 'pending'/null/unknown values clear the verdict (key dropped)
+    counts = _refresh_review_artifacts(analysis_id, cleaned)
+    return {"analysis_id": analysis_id, "verdicts": cleaned, "counts": counts}
+
+
+# -------------------------------------------------------------------------
+# Evidence Bundle (GET /api/export/{analysis_id}/bundle)
+# -------------------------------------------------------------------------
+
+BUNDLE_FILES = [
+    ("annotated.png", "annotated.png"),
+    ("evidence.png", "evidence.png"),
+    ("colormap.png", "colormap.png"),
+    ("detections.csv", "detections.csv"),
+    ("results.json", "results.json"),
+    ("report.pdf", "report.pdf"),
+    ("waypoints.txt", "waypoints.txt"),
+    ("dive_plan.kml", "dive_plan.kml"),
+]
+
+
+@router.get("/{analysis_id}/bundle")
+async def download_evidence_bundle(analysis_id: str):
+    """Downloads a single ZIP evidence bundle (imagery + reports + C2 exports)."""
+    analysis_dir = get_analysis_dir(analysis_id)
+    ensure_nmea_file(analysis_id)
+    ensure_kml_file(analysis_id)
+    bundle_path = analysis_dir / "evidence_bundle.zip"
+    with zipfile.ZipFile(str(bundle_path), "w", zipfile.ZIP_DEFLATED) as zf:
+        for filename, arcname in BUNDLE_FILES:
+            src = analysis_dir / filename
+            if src.exists():
+                zf.write(str(src), arcname)
+    return FileResponse(
+        path=str(bundle_path),
+        media_type="application/zip",
+        filename=f"kadal_evidence_{analysis_id[:8]}.zip"
+    )

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, FileText, FileSpreadsheet, Code, Image as ImageIcon, Compass, Route } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, Code, Image as ImageIcon, Compass, Route, Package } from 'lucide-react';
 import type { AnalysisResponse } from '../types';
 
 interface ReportActionsProps {
@@ -11,6 +11,7 @@ export const ReportActions: React.FC<ReportActionsProps> = ({ analysis }) => {
   const analysisId = analysis?.analysis_id;
   const nmeaUrl = analysis?.nmea_export_url || (analysisId ? `/api/export/${analysisId}/nmea` : '/api/export/nmea');
   const kmlUrl = analysis?.kml_export_url || (analysisId ? `/api/export/${analysisId}/kml` : '/api/export/kml');
+  const bundleUrl = analysis?.bundle_export_url || (analysisId ? `/api/export/${analysisId}/bundle` : null);
 
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded p-3 flex flex-col gap-2 font-mono text-xs">
@@ -19,7 +20,7 @@ export const ReportActions: React.FC<ReportActionsProps> = ({ analysis }) => {
           <Download className="h-4 w-4 text-cyan-400" />
           Mission Reports & C2 Naval Export
         </span>
-        <span className="text-[10px] text-slate-500">PDF • CSV • NMEA • KML</span>
+        <span className="text-[10px] text-slate-500">PDF • CSV • NMEA • KML • Bundle</span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -113,6 +114,22 @@ export const ReportActions: React.FC<ReportActionsProps> = ({ analysis }) => {
           <span className="text-[8px] text-slate-400">High-Res Render</span>
         </a>
       </div>
+
+      {/* Evidence Bundle (single ZIP) */}
+      <a
+        href={bundleUrl || '#'}
+        download={analysis ? `kadal_evidence_${analysis.analysis_id.slice(0, 8)}.zip` : undefined}
+        className={`p-2 rounded border flex items-center justify-center gap-2 text-center transition-all ${
+          bundleUrl
+            ? 'bg-slate-950/80 border-fuchsia-500/50 hover:bg-fuchsia-950/40 text-fuchsia-300 hover:border-fuchsia-400 shadow-[0_0_10px_rgba(232,121,249,0.15)] cursor-pointer'
+            : 'bg-slate-950/30 border-slate-800 text-slate-600 cursor-not-allowed pointer-events-none'
+        }`}
+        title="Download one ZIP: annotated + evidence + colormap PNGs, CSV, JSON, PDF, NMEA, KML"
+      >
+        <Package className="h-4 w-4 text-fuchsia-400" />
+        <span className="font-bold text-[10px]">Evidence Bundle (.ZIP)</span>
+        <span className="text-[8px] text-slate-400">All Reports + Imagery</span>
+      </a>
     </div>
   );
 };

@@ -4,10 +4,13 @@ from typing import List, Dict, Any
 
 def generate_csv_report(
     detections: List[Dict[str, Any]],
-    geospatial_meta: Dict[str, Any]
+    geospatial_meta: Dict[str, Any],
+    verdicts: Dict[Any, str] = None
 ) -> str:
     """
     Generates structured CSV export for all detections.
+    Optional verdicts map ({detection_id: 'confirmed'|'rejected'}) stamps
+    operator review decisions; per-detection review_verdict fields win.
     """
     output = io.StringIO()
     writer = csv.writer(output)
@@ -35,7 +38,9 @@ def generate_csv_report(
         "latitude",
         "longitude",
         "crs",
-        "coordinate_source"
+        "coordinate_source",
+        "uncertainty_meters",
+        "review_verdict"
     ])
 
     mapping = {
@@ -52,9 +57,13 @@ def generate_csv_report(
         geo = det.get("geolocation") or {}
         cname = det.get("class_name", "")
         obj_type = det.get("object_type") or mapping.get(str(cname).lower(), str(cname).replace("_", " ").title())
+        det_id = det.get("id")
+        verdict = det.get("review_verdict")
+        if verdict is None and verdicts:
+            verdict = verdicts.get(det_id, verdicts.get(str(det_id)))
 
         writer.writerow([
-            det.get("id"),
+            det_id,
             det.get("threat_score", 0),
             obj_type,
             det.get("class_name"),
@@ -75,7 +84,9 @@ def generate_csv_report(
             geo.get("latitude") if geo.get("latitude") is not None else "",
             geo.get("longitude") if geo.get("longitude") is not None else "",
             geo.get("crs") if geo.get("crs") is not None else (geospatial_meta.get("crs") if geospatial_meta.get("georeferenced") else ""),
-            geo.get("coordinate_source") if geo.get("coordinate_source") is not None else (geospatial_meta.get("coordinate_source") if geospatial_meta.get("georeferenced") else "")
+            geo.get("coordinate_source") if geo.get("coordinate_source") is not None else (geospatial_meta.get("coordinate_source") if geospatial_meta.get("georeferenced") else ""),
+            f"{det.get('uncertainty_meters', 0.0):.2f}" if det.get("uncertainty_meters") is not None else "",
+            verdict or "pending"
         ])
 
     return output.getvalue()

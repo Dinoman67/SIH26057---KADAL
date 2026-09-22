@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AnalysisResponse, ModelMetadata, SampleItem, WaterfallSurvey } from '../types';
+import type { AnalysisResponse, ModelMetadata, SampleItem, VerdictMap, WaterfallSurvey } from '../types';
 
 const API_BASE = '/api';
 
@@ -48,6 +48,26 @@ export async function analyzeSample(
     use_tiling: useTiling,
   });
   return res.data;
+}
+
+export async function fetchVerdicts(analysisId: string): Promise<VerdictMap> {
+  const res = await axios.get(`/api/export/${analysisId}/verdicts`);
+  const raw = (res.data?.verdicts ?? {}) as Record<string, string>;
+  const out: VerdictMap = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (v === 'confirmed' || v === 'rejected') out[Number(k)] = v;
+  }
+  return out;
+}
+
+export async function saveVerdicts(analysisId: string, verdicts: VerdictMap): Promise<VerdictMap> {
+  const res = await axios.patch(`/api/export/${analysisId}/verdicts`, { verdicts });
+  const raw = (res.data?.verdicts ?? {}) as Record<string, string>;
+  const out: VerdictMap = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (v === 'confirmed' || v === 'rejected') out[Number(k)] = v;
+  }
+  return out;
 }
 
 const FALLBACK_WATERFALL_SURVEYS: WaterfallSurvey[] = [
