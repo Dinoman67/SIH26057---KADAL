@@ -17,7 +17,7 @@
 **Smart India Hackathon 2026 | Problem Statement: SIH26057 (Ministry of Earth Sciences / NIOT)**  
 *Real-time AI for Marine Debris, Naval Mine Countermeasures (MCM), Shipwrecks, and Submerged Aircraft Localization in Side-Scan Sonar (SSS) Imagery.*
 
-<[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [Live Demo](#quick-start) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Provenance](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders) • [Report Engine](#automated-intelligence-reporting) • [Roadmap](#roadmap)
+[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [Live Demo](#quick-start) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Provenance](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders) • [Report Engine](#automated-intelligence-reporting) • [Roadmap](#roadmap)
 
 </div>
 
@@ -242,7 +242,7 @@ To run live GPU/CPU ONNX tensor inference:
 
 ---
 
-<## License & Acknowledgements
+## License & Acknowledgements
 
 * Released under the **Apache 2.0 License** (see [LICENSE](LICENSE)).
 
@@ -264,5 +264,6 @@ To run live GPU/CPU ONNX tensor inference:
 * Sudhishna P
 
 ---
+
 * Developed for **Smart India Hackathon 2026** by Team **Cold Start**.
 * Acoustic data sources: NOAA Hydrographic Survey Archives, NATO STO CMRE MILCO Benchmark, and Kaggle SSS Object Detection.
