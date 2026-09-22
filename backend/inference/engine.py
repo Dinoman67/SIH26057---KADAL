@@ -90,7 +90,7 @@ class YOLOESIInferenceEngine:
         self.model_name = "YOLOv8-ESI"
         self.classes = MODEL_CLASSES
         self.input_size = MODEL_INPUT_SIZE
-        self.total_params = "3.3M parameters"
+        self.total_params = "3.03M parameters"
         self.architecture = "YOLOv8-Nano + Squeeze-and-Excitation (SE) Attention"
         
         self._initialized = True

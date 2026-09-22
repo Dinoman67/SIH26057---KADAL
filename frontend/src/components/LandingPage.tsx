@@ -109,10 +109,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
       <section className="relative z-10 border-y border-white/5 bg-[#0d1f3c]/60 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { label: 'mAP50 Score', value: '88.4%', color: 'text-cyan-400', delay: 0 },
-            { label: 'Model Size', value: '6.2 MB', color: 'text-emerald-400', delay: 100 },
-            { label: 'Parameters', value: '3.3M', color: 'text-amber-400', delay: 200 },
-            { label: 'Recall', value: '98.4%', color: 'text-blue-400', delay: 300 },
+            { label: 'mAP50 Score', value: '60.4%', color: 'text-cyan-400', delay: 0 },
+            { label: 'Model Size', value: '5.9 MB', color: 'text-emerald-400', delay: 100 },
+            { label: 'Parameters', value: '3.03M', color: 'text-amber-400', delay: 200 },
+            { label: 'Clean-Seabed False Alarms', value: '0', color: 'text-blue-400', delay: 300 },
           ].map((stat) => (
             <div key={stat.label} className="text-center sr" data-delay={stat.delay}>
               <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
@@ -137,8 +137,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { icon: Brain, title: 'Spatial-Aware Detection', desc: 'YOLOv8-ESI with SE attention learns shadow patterns and intensity gradients — not just bright spots — for accurate sonar debris identification.' },
-              { icon: Globe, title: 'Global Data Insights', desc: 'Mapping pollution trends worldwide with georeferenced detection results. NOAA H11833 benchmark dataset with 834 unseen test images.' },
-              { icon: Shield, title: 'Edge Deployment', desc: '6.2 MB ONNX FP16 model runs on Raspberry Pi at 15+ FPS. Lightweight enough for real-time ocean surveying on edge devices.' },
+              { icon: Globe, title: 'Global Data Insights', desc: 'Mapping pollution trends worldwide with georeferenced detection results. NOAA H11833 benchmark dataset with 833 unseen test images.' },
+              { icon: Shield, title: 'Edge Deployment', desc: '5.9 MB ONNX FP16 model runs at ~2.4 ms on GPU and under 45 ms on edge ARM CPUs. Lightweight enough for real-time ocean surveying on edge devices.' },
             ].map((f, i) => (
               <div
                 key={f.title}
@@ -163,12 +163,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
             <div className="sr" data-delay="0">
               <h2 className="text-3xl font-bold text-white mb-4">Two-Stage Training Pipeline</h2>
               <p className="text-slate-400 leading-relaxed mb-6">
-                Systematic model selection with unseen test validation. YOLOv8-ESI achieves +12.3% mAP50 improvement over baseline YOLOv8n with only 10% more parameters.
+                Systematic model selection with unseen test validation. KADAL YOLOv8-ESI v6 reaches 0.6042 overall mAP50 versus 0.3685 for the 4-class YOLO baseline (+64%) on the 962-image held-out test.
               </p>
               <div className="space-y-3">
                 {[
                   'Squeeze-and-Excitation attention in C2f backbone',
-                  '3.3M parameters — deployable on Raspberry Pi 3',
+                  '3.03M parameters — edge-CPU capable, no marine GPU needed',
                   'Noise augmentation: speckle, nadir, acoustic shadows',
                   'FP16/INT8 quantization with accuracy validation',
                 ].map((item, i) => (
@@ -183,9 +183,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
               <h3 className="text-sm font-bold text-white mb-4 font-mono-tech uppercase tracking-wider">Model Comparison</h3>
               <div className="space-y-3">
                 {[
-                  { model: 'YOLOv8n (baseline)', params: '3.01M', map: '78.7%', size: '12 MB' },
-                  { model: 'SS-YOLO', params: '1.66M', map: '68.9%', size: '7 MB' },
-                  { model: 'YOLOv8-ESI (ours)', params: '3.3M', map: '88.4%', size: '6 MB', highlight: true },
+                  { model: 'YOLO baseline (4-class)', params: '—', map: '36.9%', size: '—' },
+                  { model: 'KADAL YOLOv8-ESI v6 (ours)', params: '3.03M', map: '60.4%', size: '5.9 MB', highlight: true },
                 ].map((m, i) => (
                   <div
                     key={m.model}

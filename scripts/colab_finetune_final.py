@@ -1,5 +1,5 @@
 """
-Sonar Vision — E3 Inference (FINAL CORRECTED)
+KADAL — E3 Inference (FINAL CORRECTED)
 ================================================
 Problem: COCO model detects debris as "sports ball" (class 37), but ground
 truth is class 0 (marine_debris). model.val() shows 0 mAP due to class mismatch.
