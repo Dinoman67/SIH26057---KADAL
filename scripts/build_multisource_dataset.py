@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SonarVision — Build Multi-Source YOLO Training/Validation/Test Dataset
+KADAL — Build Multi-Source YOLO Training/Validation/Test Dataset
 =====================================================================
 
 Combines NOAA, MILCO-NOMBO, and Kaggle Side-Scan Sonar data into a single
@@ -670,7 +670,7 @@ def generate_report(samples: List[SampleInfo], output_dir: str, dup_count: int) 
     # Write markdown report
     md_path = os.path.join(report_dir, "sonarvision_multisource_v1_report.md")
     with open(md_path, "w") as f:
-        f.write("# SonarVision Multi-Source Dataset Report\n\n")
+        f.write("# KADAL Multi-Source Dataset Report\n\n")
         f.write("## Overall\n\n")
         f.write(f"- Total samples: {stats['total_samples']}\n")
         f.write(f"- Usable samples: {stats['usable_samples']}\n")
@@ -786,7 +786,7 @@ def validate_dataset(output_dir: str) -> bool:
 # Main
 # ---------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Build SonarVision multi-source dataset")
+    parser = argparse.ArgumentParser(description="Build KADAL multi-source dataset")
     parser.add_argument("--output", default="datasets/sonarvision_multisource_v1",
                         help="Output directory for the dataset")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
@@ -852,7 +852,7 @@ def main():
         logger.info("=" * 60)
         yaml_path = os.path.join(output_dir, "dataset.yaml")
         with open(yaml_path, "w") as f:
-            f.write(f"# SonarVision Multi-Source Dataset v1\n")
+            f.write(f"# KADAL Multi-Source Dataset v1\n")
             f.write(f"path: {output_dir}\n")
             f.write(f"train: images/train\n")
             f.write(f"val: images/val\n")

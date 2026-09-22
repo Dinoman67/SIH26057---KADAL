@@ -1,7 +1,7 @@
 """
 backend/reports/kml_export.py
 
-Autonomous Dive Route & Tactical Geographic KML Export for SonarVision C2.
+Autonomous Dive Route & Tactical Geographic KML Export for KADAL C2.
 Generates standard OGC KML 2.2 XML with:
 1. Target Contact Placemarks styled by C2 threat score (Critical/Elevated/Monitor).
 2. Autonomous Underwater Vehicle (AUV) tactical inspection route computed via 
@@ -71,7 +71,7 @@ def generate_kml_export(
     Generates a standard OGC KML 2.2 XML file for Google Earth, QGIS, and tactical ECDIS.
     Includes individual target placemarks and an optimized AUV autonomous dive inspection route.
     """
-    title = mission_title or (f"SonarVision Dive Plan - {source_filename}" if source_filename else "SonarVision Tactical Dive Plan")
+    title = mission_title or (f"KADAL Dive Plan - {source_filename}" if source_filename else "KADAL Tactical Dive Plan")
     timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # Filter georeferenced detections
@@ -104,7 +104,7 @@ def generate_kml_export(
         '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">',
         '  <Document>',
         f'    <name>{escape(title)}</name>',
-        f'    <description><![CDATA[SonarVision Autonomous Edge Intelligence (SIH26057)<br/>Generated: {timestamp}<br/>Total Target Contacts: {len(geo_detections)}]]></description>',
+        f'    <description><![CDATA[KADAL Autonomous Edge Intelligence (SIH26057)<br/>Generated: {timestamp}<br/>Total Target Contacts: {len(geo_detections)}]]></description>',
         '',
         '    <!-- Style Definitions -->',
         '    <Style id="criticalThreat">',

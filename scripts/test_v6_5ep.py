@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quick 5-Epoch Verification Test on SonarVision v6 Dataset
+Quick 5-Epoch Verification Test on KADAL v6 Dataset
 ========================================================
 Validates that:
   - YOLOv8-ESI architecture compiles with nc=4

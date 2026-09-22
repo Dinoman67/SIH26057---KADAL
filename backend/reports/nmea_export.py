@@ -1,7 +1,7 @@
 """
 backend/reports/nmea_export.py
 
-NMEA 0183 Naval Bridge Export Module for SonarVision C2 Suite.
+NMEA 0183 Naval Bridge Export Module for KADAL C2 Suite.
 Generates standard NMEA 0183 $GPWPL (Waypoint Location) sentences with 
 XOR checksums for integration with naval ECDIS, radar, and GPS chartplotters.
 """
@@ -69,8 +69,8 @@ def generate_nmea_export(
     Each georeferenced contact is converted into a standard $GPWPL waypoint sentence.
     """
     lines = [
-        "!--- SONARVISION C2 NAVAL BRIDGE EXPORT ---!",
-        f"# System: SonarVision Autonomous Edge Intelligence (SIH26057)",
+        "!--- KADAL C2 NAVAL BRIDGE EXPORT ---!",
+        f"# System: KADAL Autonomous Edge Intelligence (SIH26057)",
         f"# Protocol: NMEA 0183 v4.10 ($GPWPL Waypoint Location)",
         f"# Export Timestamp: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}",
     ]

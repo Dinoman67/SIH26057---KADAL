@@ -1,4 +1,4 @@
-# SonarVision - SSS Marine Debris Detection Dependencies
+# KADAL - SSS Marine Debris Detection Dependencies
 # Python >= 3.10 recommended
 
 # Core Deep Learning & Computer Vision

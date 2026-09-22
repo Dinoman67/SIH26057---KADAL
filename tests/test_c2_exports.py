@@ -1,7 +1,7 @@
 """
 tests/test_c2_exports.py
 
-Comprehensive test suite for SonarVision C2 Operational Upgrades:
+Comprehensive test suite for KADAL C2 Operational Upgrades:
 1. Automated Threat Triage & Risk Score Formula
 2. NMEA 0183 Naval Bridge Export & XOR Checksum
 3. Autonomous Dive Route Export (.KML) & Nearest-Neighbor Trajectory

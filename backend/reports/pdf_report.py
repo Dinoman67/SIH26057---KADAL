@@ -325,7 +325,7 @@ def create_pdf_report(
 
     disclaimer_text = (
         "<font size='7' color='#64748b'><b>Operational Disclaimer:</b> This report is generated automatically by the "
-        "SonarVision YOLOv8-ESI remote sensing inference pipeline. The model functions as a multi-source acoustic "
+        "KADAL YOLOv8-ESI remote sensing inference pipeline. The model functions as a multi-source acoustic "
         "target classifier trained across NOAA, MILCO, and Kaggle side-scan sonar datasets.</font>"
     )
 

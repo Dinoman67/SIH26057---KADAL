@@ -1,4 +1,4 @@
-# SonarVision v3 — FINAL Dataset Verification Report
+# KADAL v3 — FINAL Dataset Verification Report
 
 Generated: final prep run | dataset: `datasets/sonarvision_multisource_v3`
 

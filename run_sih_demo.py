@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SIH 2026 Demo Test Runner — SonarVision YOLOv8-ESI
+SIH 2026 Demo Test Runner — KADAL YOLOv8-ESI
 ===================================================
 Runs verified inference across all SIH_demo images, displays formatted benchmark
 tables with exact detection confidences, and produces annotated validation crops.
@@ -68,7 +68,7 @@ def run_demo():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     print("\n" + "═" * 95)
-    print("🌊 SONARVISION: SIH 2026 JUDGES LIVE DEMO TEST SUITE")
+    print("🌊 KADAL: SIH 2026 JUDGES LIVE DEMO TEST SUITE")
     print(f"Model: {Path(model_path).name} (YOLOv8-ESI Edge Engine)")
     print(f"Confidence Threshold: {CONF_THRESHOLD} | NMS IoU: {IOU_THRESHOLD} | Resolution: 256x256")
     print("═" * 95 + "\n")

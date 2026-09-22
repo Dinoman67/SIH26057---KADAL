@@ -1,4 +1,4 @@
-# SonarVision Multi-Source Dataset v3 Report
+# KADAL Multi-Source Dataset v3 Report
 
 ## v2 → v3 Changes (sensor-isolated classes)
 

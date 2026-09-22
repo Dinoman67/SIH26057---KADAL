@@ -90,9 +90,9 @@ pdf.ln(2)
 # --- Projects ---
 pdf.section_title("Projects")
 
-# Project 1: SonarVision
+# Project 1: KADAL
 pdf.entry_header(
-    "SonarVision - Underwater Marine Debris Detection",
+    "KADAL - Underwater Marine Debris Detection",
     "GitHub: github.com/Dinoman67/sonarvision",
 )
 pdf.bullet(

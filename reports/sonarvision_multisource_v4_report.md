@@ -1,4 +1,4 @@
-# SonarVision Multi-Source Dataset v4 Report
+# KADAL Multi-Source Dataset v4 Report
 
 ## v3 → v4 Changes (post-mortem fixes)
 

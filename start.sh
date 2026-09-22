@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-# SonarVision Unified Application Launcher
+# KADAL Unified Application Launcher
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -102,7 +102,7 @@ if [ "$DEV_MODE" = false ]; then
     else
         echo "[1/2] Frontend build verified."
     fi
-    echo "[2/2] Launching unified SonarVision web app on http://${HOST}:${PORT}..."
+    echo "[2/2] Launching unified KADAL web app on http://${HOST}:${PORT}..."
     exec "$PYTHON" run_app.py --host "$HOST" --port "$PORT" "${EXTRA_ARGS[@]}"
 else
     echo "[Dev Mode] Starting backend (port $PORT) and frontend dev server (port 5173)..."

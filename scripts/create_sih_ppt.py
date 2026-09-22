@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SIH 2026 Presentation Generator — SonarVision
+SIH 2026 Presentation Generator — KADAL
 ===============================================
 Fills the official SIH template with project-specific content for YOLOv8-ESI v6.
 Only modifies text — preserves all design elements, logos, shapes, and formatting.
@@ -17,7 +17,7 @@ from pathlib import Path
 # ═══════════════════════════════════════════════════════════════════════════════
 
 INPUT_PATH = Path.home() / "Downloads" / "SIH2026-IDEA-Presentation-Format.pptx"
-OUTPUT_PATH = Path.home() / "Downloads" / "SIH2026-SonarVision-Presentation.pptx"
+OUTPUT_PATH = Path.home() / "Downloads" / "SIH2026-KADAL-Presentation.pptx"
 
 # Team Info
 TEAM_NAME = "DeepSea Coders"
@@ -178,7 +178,7 @@ def main():
         for para in title_shape.text_frame.paragraphs:
             for run in para.runs:
                 if "IDEA" in run.text.upper():
-                    run.text = "SonarVision — Autonomous Multi-Sensor SSS Target Detection"
+                    run.text = "KADAL — Autonomous Multi-Sensor SSS Target Detection"
                 elif "SMART" in run.text.upper() or "HACKATHON" in run.text.upper():
                     run.text = ""
             break
@@ -326,7 +326,7 @@ def main():
             ("", 4, False, None),
             ("Comparative Advantages over Existing Systems", 16, True, "Arial"),
             ("• Generic YOLOv8: Learns bright intensity spots, fails completely on acoustic shadows (mAP < 0.35 on SSS).", 12, False, "Arial"),
-            ("• SonarVision YOLOv8-ESI: SE attention forces network to bind acoustic highlights with correlated shadows (+12.3% mAP).", 12, False, "Arial"),
+            ("• KADAL YOLOv8-ESI: SE attention forces network to bind acoustic highlights with correlated shadows (+12.3% mAP).", 12, False, "Arial"),
             ("• Multi-Sensor Robustness: Proven cross-sensor generalization across Klein 5000, Klein 3500, and Kaggle acoustic feeds.", 12, False, "Arial"),
             ("", 4, False, None),
             ("Open Source Reproducibility", 16, True, "Arial"),

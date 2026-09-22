@@ -1,7 +1,7 @@
 """
 backend/inference/acoustic_physics.py
 
-Acoustic Physics & Hydrographic Mensuration Engine for SonarVision.
+Acoustic Physics & Hydrographic Mensuration Engine for KADAL.
 Implements:
 1. Target Material Density Classification via Peak Acoustic Backscatter (95th Percentile Intensity, P95)
    - Specific Acoustic Impedance Z = rho * c

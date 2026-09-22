@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SonarVision — Definitive Audit of Rebuilt Multi-Source Dataset v2
+KADAL — Definitive Audit of Rebuilt Multi-Source Dataset v2
 =================================================================
 Uses persisted group_key + original_id from metadata.csv (reliable), not
 renamed filenames:

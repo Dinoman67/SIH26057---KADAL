@@ -1,6 +1,6 @@
 """
 ================================================================
-YOLOv8-ESI Training — SonarVision Multi-Source Dataset v2
+YOLOv8-ESI Training — KADAL Multi-Source Dataset v2
 ================================================================
 5-class detection: unknown_debris, airplane, drowning_victim, mine, wreck
 3 sensors: NOAA e4+h8 | MILCO-NOMBO | Kaggle SSS   (5626 images, leakage-free)

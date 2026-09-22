@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SonarVision — Comprehensive Audit of Multi-Source Dataset
+KADAL — Comprehensive Audit of Multi-Source Dataset
 ==========================================================
 
 Validates the generated dataset for YOLO trainability:
@@ -41,7 +41,7 @@ MASTER_CLASSES = {
 def audit_dataset(dataset_dir: str):
     """Run full audit on the dataset."""
     print("=" * 60)
-    print("SONARVISION MULTI-SOURCE DATASET AUDIT")
+    print("KADAL MULTI-SOURCE DATASET AUDIT")
     print("=" * 60)
     
     issues = []

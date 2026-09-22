@@ -4,7 +4,7 @@
 all: run
 
 help:
-	@echo "SonarVision Makefile Commands:"
+	@echo "KADAL Makefile Commands:"
 	@echo "  make run        - Build frontend (if needed) and start unified app (port 8000)"
 	@echo "  make dev        - Start backend and frontend dev servers concurrently"
 	@echo "  make build      - Build frontend production bundle (frontend/dist)"

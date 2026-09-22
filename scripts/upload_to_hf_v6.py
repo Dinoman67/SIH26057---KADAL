@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Upload SonarVision v6 Models & Dataset to Hugging Face (Restricted / Private)
+Upload KADAL v6 Models & Dataset to Hugging Face (Restricted / Private)
 =============================================================================
 
 Usage:
@@ -25,7 +25,7 @@ from huggingface_hub import HfApi, create_repo
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Push SonarVision v6 Models & Dataset to Hugging Face Private Repositories"
+        description="Push KADAL v6 Models & Dataset to Hugging Face Private Repositories"
     )
     parser.add_argument(
         "--token",
@@ -79,7 +79,7 @@ def main():
     visibility_str = "Private / Restricted 🔒" if is_private else "Public 🌐"
 
     print("=" * 70)
-    print("🌊 SonarVision v6 Hugging Face Exporter (Restricted / Private)")
+    print("🌊 KADAL v6 Hugging Face Exporter (Restricted / Private)")
     print("=" * 70)
 
     # 1. Validate Token
@@ -166,7 +166,7 @@ def main():
                 folder_path=str(dataset_folder),
                 repo_id=dataset_repo_id,
                 repo_type="dataset",
-                commit_message="Upload SonarVision Multi-Source v6 Dataset (5,558 SSS images, 4 classes, leakage-free)"
+                commit_message="Upload KADAL Multi-Source v6 Dataset (5,558 SSS images, 4 classes, leakage-free)"
             )
             print(f"   🎉 Successfully uploaded Dataset repository: https://huggingface.co/datasets/{dataset_repo_id}")
         except Exception as e:

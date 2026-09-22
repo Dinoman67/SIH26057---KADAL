@@ -58,7 +58,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-sm font-bold tracking-[0.25em] text-white/90 font-mono-tech uppercase">
-              Sonar Vision
+              KADAL
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-slate-400">
@@ -80,11 +80,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
         <div className="max-w-7xl mx-auto w-full">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 tracking-tight hero-title-animate">
-              <span className="text-white">SONAR </span>
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">VISION</span>
+              <span className="text-white">KADAL</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-400 leading-relaxed mb-10 max-w-xl hero-subtitle-animate">
-              AI-powered marine debris detection from side-scan sonar imagery.
+              Kilohertz Acoustic Debris &amp; Anomaly Localization — AI-powered marine debris detection from side-scan sonar imagery.
             </p>
             <div className="flex flex-wrap items-center gap-4 hero-buttons-animate">
               <button
@@ -233,12 +232,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLaunch }) => {
       <footer id="contact" className="relative z-10 border-t border-white/5 bg-[#070f20]/90 backdrop-blur-sm px-6 py-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500 font-mono">Sonar Vision — YOLO-ESI Debris Intelligence v1.0</span>
+            <span className="text-xs text-slate-500 font-mono">KADAL — Kilohertz Acoustic Debris &amp; Anomaly Localization</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-slate-600 font-mono">
             <span>Smart India Hackathon 2026</span>
             <span>•</span>
-            <span>MIT License</span>
+            <span>Apache-2.0 License</span>
             <span>•</span>
             <a href="https://github.com/Dinoman67/sonarvision" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors duration-200">
               GitHub

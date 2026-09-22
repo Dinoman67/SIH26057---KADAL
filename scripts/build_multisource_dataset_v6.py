@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SonarVision — Build Multi-Source YOLO Dataset v6
+KADAL — Build Multi-Source YOLO Dataset v6
 =================================================
 
 v5 → v6 changes (driven by v5 Colab T4 run post-mortem & user instructions):
@@ -657,7 +657,7 @@ def generate_report(samples, output_dir, dup_count):
 
     md_path = os.path.join("reports", "sonarvision_multisource_v6_report.md")
     with open(md_path, "w") as f:
-        f.write("# SonarVision Multi-Source Dataset v6 Report\n\n")
+        f.write("# KADAL Multi-Source Dataset v6 Report\n\n")
         f.write("## Overview\n\n")
         f.write(f"- **Total Images:** {len(usable)}\n")
         f.write(f"- **Exact Duplicates Removed:** {dup_count}\n")
@@ -708,7 +708,7 @@ def validate_dataset(output_dir):
 # Main
 # ---------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Build SonarVision multi-source dataset v6")
+    parser = argparse.ArgumentParser(description="Build KADAL multi-source dataset v6")
     parser.add_argument("--output", default="datasets/sonarvision_multisource_v6")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
@@ -762,7 +762,7 @@ def main():
     logger.info("=" * 60)
     yaml_path = os.path.join(output_dir, "dataset.yaml")
     with open(yaml_path, "w") as f:
-        f.write("# SonarVision Multi-Source Dataset v6\n")
+        f.write("# KADAL Multi-Source Dataset v6\n")
         f.write("# Sensor-isolated classes: debris=h8 (Core_model frame split) | mine=MILCO (5-point fix) | airplane/wreck=Kaggle\n\n")
         f.write(f"path: {output_dir}\n")
         f.write(f"train: images/train\n")

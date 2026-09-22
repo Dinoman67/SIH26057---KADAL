@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SonarVision — Build Multi-Source YOLO Dataset v2
+KADAL — Build Multi-Source YOLO Dataset v2
 =================================================
 
 v1 → v2 improvements:
@@ -700,7 +700,7 @@ def generate_report(samples, output_dir, dup_count):
     # Markdown
     md_path = os.path.join(report_dir, "sonarvision_multisource_v2_report.md")
     with open(md_path, "w") as f:
-        f.write("# SonarVision Multi-Source Dataset v2 Report\n\n")
+        f.write("# KADAL Multi-Source Dataset v2 Report\n\n")
         f.write("## v1 → v2 Changes\n\n")
         f.write("- Added NOAA h8 dataset (+3548 images)\n")
         f.write("- Oversampled drowning_victim 10x, airplane 3x\n")
@@ -783,7 +783,7 @@ def validate_dataset(output_dir):
 # Main
 # ---------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Build SonarVision multi-source dataset v2")
+    parser = argparse.ArgumentParser(description="Build KADAL multi-source dataset v2")
     parser.add_argument("--output", default="datasets/sonarvision_multisource_v2")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
@@ -852,7 +852,7 @@ def main():
     logger.info("=" * 60)
     yaml_path = os.path.join(output_dir, "dataset.yaml")
     with open(yaml_path, "w") as f:
-        f.write(f"# SonarVision Multi-Source Dataset v2\n")
+        f.write(f"# KADAL Multi-Source Dataset v2\n")
         f.write(f"# NOAA e4 + h8 | MILCO-NOMBO | Kaggle SSS\n")
         f.write(f"# Oversampled: drowning_victim 10x, airplane 3x\n")
         f.write(f"# Noise pipeline: Gaussian + speckle + brightness\n\n")

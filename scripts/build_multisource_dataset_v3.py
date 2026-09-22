@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SonarVision — Build Multi-Source YOLO Dataset v3 (FINAL)
+KADAL — Build Multi-Source YOLO Dataset v3 (FINAL)
 ==========================================================
 
 v2 → v3 changes (sensor-isolated classes — FINAL design):
@@ -716,7 +716,7 @@ def generate_report(samples, output_dir, dup_count):
     # Markdown
     md_path = os.path.join(report_dir, "sonarvision_multisource_v3_report.md")
     with open(md_path, "w") as f:
-        f.write("# SonarVision Multi-Source Dataset v3 Report\n\n")
+        f.write("# KADAL Multi-Source Dataset v3 Report\n\n")
         f.write("## v2 → v3 Changes (sensor-isolated classes)\n\n")
         f.write("- mine = MILCO ONLY (Kaggle mines dropped — bimodal class, corr 0.26)\n")
         f.write("- unknown_debris = NOAA + MILCO NOMBO (catch-all, 2 real sensors)\n")
@@ -800,7 +800,7 @@ def validate_dataset(output_dir):
 # Main
 # ---------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Build SonarVision multi-source dataset v3 (final)")
+    parser = argparse.ArgumentParser(description="Build KADAL multi-source dataset v3 (final)")
     parser.add_argument("--output", default="datasets/sonarvision_multisource_v3")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
@@ -869,7 +869,7 @@ def main():
     logger.info("=" * 60)
     yaml_path = os.path.join(output_dir, "dataset.yaml")
     with open(yaml_path, "w") as f:
-        f.write(f"# SonarVision Multi-Source Dataset v3 (FINAL)\n")
+        f.write(f"# KADAL Multi-Source Dataset v3 (FINAL)\n")
         f.write(f"# Sensor-isolated classes: mine=MILCO | debris=NOAA+NOMBO |\n")
         f.write(f"# airplane/drowning/wreck=Kaggle\n")
         f.write(f"# Oversampled: drowning_victim 10x, airplane 3x\n")

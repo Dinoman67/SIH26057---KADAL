@@ -1,4 +1,5 @@
-# SonarVision: Autonomous Multi-Sensor Marine Debris & Threat Intelligence System
+# KADAL: Kilohertz Acoustic Debris & Anomaly Localization
+*Autonomous multi-sensor marine debris & threat intelligence system (SIH 2026)*
 
 <div align="center">
 
@@ -74,7 +75,7 @@ Standard computer vision models (COCO-trained YOLOv8, Faster R-CNN) fail catastr
 
 ## Two-Model Operational Architecture
 
-To provide maximum operational flexibility for maritime authorities and environmental teams, SonarVision supports a two-model strategy:
+To provide maximum operational flexibility for maritime authorities and environmental teams, KADAL supports a two-model strategy:
 
 | Component | Model 1: Debris Specialist (deprecated reference) | Model 2: Multi-Sensor Target Classifier (production champion) |
 | :--- | :--- | :--- |
@@ -95,7 +96,7 @@ Evaluated strictly on independent, held-out side-scan sonar images (zero file ov
 
 **Benchmark methodology.** The 962-image test split was built with zero file overlap against train/val, so no test frame was seen in training. Per-sensor breakdowns (NOAA / Kaggle / MILCO below) matter because each sonar model has distinct speckle, gain, and shadow statistics — a single pooled score would hide sensor-specific failure modes.
 
-| Object Type / Class | Benchmark Target | Baseline YOLO | **SonarVision YOLOv8-ESI** | Detection Precision | Recall |
+| Object Type / Class | Benchmark Target | Baseline YOLO | **KADAL YOLOv8-ESI** | Detection Precision | Recall |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Marine Debris** (`unknown_debris`) | $\ge 0.10$ | 0.0005 | **0.8185** | **81.9%** | **78.7%** |
 | **Naval Mine** (`mine`) | $\ge 0.30$ | 0.1833 | **0.3862** | **70.7%** | **29.6%** |
@@ -152,7 +153,7 @@ Every training, validation, and test frame comes from real survey acoustics — 
 
 ## Automated Intelligence Reporting
 
-SonarVision bridges raw AI detections with hydrographic GIS operations by generating instant intelligence deliverables:
+KADAL bridges raw AI detections with hydrographic GIS operations by generating instant intelligence deliverables:
 
 1. **Publication-Ready PDF Reports**: Complete with executive summary, primary target type badge (`Naval Mine`, `Shipwreck`, `Marine Debris`), embedded high-res annotated imagery, detection inventory table, and narrative technical assessment.
 2. **Tabular CSV Exports**: Detailed spreadsheets with target ID, object type, class name, bounding box bounds, center coordinates, and resolved WGS84 latitude/longitude.

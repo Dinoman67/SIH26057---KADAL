@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SonarVision — Visual QA for Multi-Source Dataset
+KADAL — Visual QA for Multi-Source Dataset
 =================================================
 
 Randomly samples images from train/val/test, draws YOLO bounding boxes,
