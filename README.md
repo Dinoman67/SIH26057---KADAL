@@ -13,11 +13,12 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Real Data](https://img.shields.io/badge/Real_Data-No_Synthetic_Renders-brightgreen)](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders)
 [![SIH 2026](https://img.shields.io/badge/Smart_India_Hackathon-2026-orange)](https://www.sih.gov.in/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Try_KADAL-46e3b4?logo=render&logoColor=white)](https://sonarvision-t3i2.onrender.com/)
 
 **Smart India Hackathon 2026 | Problem Statement: SIH26057 (Ministry of Earth Sciences / NIOT)**  
 *Real-time AI for Marine Debris, Naval Mine Countermeasures (MCM), Shipwrecks, and Submerged Aircraft Localization in Side-Scan Sonar (SSS) Imagery.*
 
-[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [Live Demo](#quick-start) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Provenance](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders) • [Report Engine](#automated-intelligence-reporting) • [Roadmap](#roadmap)
+[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [🚀 Live Demo](https://sonarvision-t3i2.onrender.com/) • [Self-host](#quick-start) • [SIH Demo Video & Script](demo/KADAL_SIH2026_Voiceover_Script.md) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Provenance](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders) • [Report Engine](#automated-intelligence-reporting) • [Roadmap](#roadmap)
 
 </div>
 
@@ -190,13 +191,15 @@ hf download Dinoman1221/sonarvision-multisource-v6 sonarvision_multisource_v6.zi
 
 ## Quick Start
 
+> 🚀 **Try it instantly — no setup:** **[https://sonarvision-t3i2.onrender.com/](https://sonarvision-t3i2.onrender.com/)** (hosted live demo, real v6 model). Below is for self-hosting.
+
 ### 1. Clone & Run (One-Command Startup)
 
 Prerequisites: **Python 3.10+** and **Node.js 20+** (`node --version`). No manual setup beyond that:
 
 ```bash
-git clone https://github.com/Dinoman67/sonarvision.git
-cd sonarvision
+git clone https://github.com/Dinoman67/SIH26057---KADAL.git
+cd SIH26057---KADAL
 
 # Launch unified application (FastAPI backend + React frontend)
 ./start.sh
