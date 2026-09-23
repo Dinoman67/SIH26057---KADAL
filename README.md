@@ -18,7 +18,7 @@
 **Smart India Hackathon 2026 | Problem Statement: SIH26057 (Ministry of Earth Sciences / NIOT)**  
 *Real-time AI for Marine Debris, Naval Mine Countermeasures (MCM), Shipwrecks, and Submerged Aircraft Localization in Side-Scan Sonar (SSS) Imagery.*
 
-[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [🚀 Live Demo](https://sonarvision-t3i2.onrender.com/) • [Self-host](#quick-start) • [SIH Demo Video & Script](demo/KADAL_SIH2026_Voiceover_Script.md) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Provenance](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders) • [Report Engine](#automated-intelligence-reporting) • [Roadmap](#roadmap)
+[Model (Hugging Face)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6) • [Dataset (Hugging Face)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6) • [🚀 Live Demo](https://sonarvision-t3i2.onrender.com/) • [Self-host](#quick-start) • [🎬 Demo Video](https://youtu.be/pZNlCfV2AOI) • [Voiceover Script](demo/KADAL_SIH2026_Voiceover_Script.md) • [Architecture](#solution-yolov8-esi-architecture) • [Benchmarks](#empirical-benchmarks) • [Provenance](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders) • [Report Engine](#automated-intelligence-reporting) • [Roadmap](#roadmap)
 
 </div>
 
