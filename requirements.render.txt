@@ -1,0 +1,33 @@
+# KADAL - Render runtime dependencies (slim, no training stack)
+# Full local dev stack lives in requirements.txt (torch/ultralytics/matplotlib/scipy/pytest).
+# This file is what Render installs: inference + API + geospatial + reporting only.
+# Python 3.11 recommended on Render (see render.yaml PYTHON_VERSION).
+
+# Computer Vision (headless: no libGL needed on Render servers)
+opencv-python-headless>=4.8.0
+numpy>=1.24.0
+pillow>=10.0.0
+
+# Inference
+onnxruntime>=1.15.0
+
+# Backend Web API & Server
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+python-multipart>=0.0.6
+pydantic>=2.0.0
+pyyaml>=6.0
+
+# Health endpoint (backend/api/routes_health.py imports psutil)
+psutil>=5.9.0
+
+# Geospatial & Remote Sensing
+rasterio>=1.3.0
+pyproj>=3.5.0
+pyxtf>=1.3.0
+
+# Reporting & Export
+reportlab>=4.0.0
+
+# Hub access (hf download CLI for model weights at Render build time)
+huggingface_hub>=0.34.0
