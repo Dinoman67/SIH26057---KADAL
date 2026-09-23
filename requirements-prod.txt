@@ -1,0 +1,24 @@
+# KADAL Production Deployment Dependencies (Lightweight / No PyTorch)
+# Optimized for cloud environments (Render, Fly.io, Railway, Docker)
+
+# Web Framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+python-multipart>=0.0.6
+pydantic>=2.0.0
+
+# Inference & Image Processing
+onnxruntime>=1.15.0
+opencv-python-headless>=4.8.0
+numpy>=1.24.0
+pillow>=10.0.0
+psutil>=5.9.0
+
+# Geospatial & Remote Sensing
+rasterio>=1.3.0
+pyproj>=3.5.0
+pyxtf>=1.3.0
+
+# Intelligence Reporting & Model Download
+reportlab>=4.0.0
+huggingface_hub>=0.20.0
