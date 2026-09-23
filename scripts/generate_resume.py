@@ -93,7 +93,7 @@ pdf.section_title("Projects")
 # Project 1: KADAL
 pdf.entry_header(
     "KADAL - Underwater Marine Debris Detection",
-    "GitHub: github.com/Dinoman67/sonarvision",
+    "GitHub: github.com/Dinoman67/SIH26057---KADAL",
 )
 pdf.bullet(
     "Built YOLOv8-ESI, a lightweight object detection model with squeeze-and-excitation "

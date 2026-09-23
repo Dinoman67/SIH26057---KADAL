@@ -20,7 +20,7 @@ INPUT_PATH = Path.home() / "Downloads" / "SIH2026-IDEA-Presentation-Format.pptx"
 OUTPUT_PATH = Path.home() / "Downloads" / "SIH2026-KADAL-Presentation.pptx"
 
 # Team Info
-TEAM_NAME = "DeepSea Coders"
+TEAM_NAME = "Innovation Igniters"
 PROBLEM_STATEMENT_ID = "SIH26215"
 PROBLEM_STATEMENT_TITLE = "Marine Debris Detection in Side-Scan Sonar Imagery"
 THEME = "Ocean / Environmental Monitoring"
@@ -330,7 +330,7 @@ def main():
             ("• Multi-Sensor Robustness: Proven cross-sensor generalization across Klein 5000, Klein 3500, and Kaggle acoustic feeds.", 12, False, "Arial"),
             ("", 4, False, None),
             ("Open Source Reproducibility", 16, True, "Arial"),
-            ("• Complete pipeline, dataset builders, audit reports, and demo suite: github.com/Dinoman67/sonarvision", 12, False, "Arial"),
+            ("• Complete pipeline, dataset builders, audit reports, and demo suite: github.com/Dinoman67/SIH26057---KADAL", 12, False, "Arial"),
         ]
         set_shape_text(content6, slide6_lines)
 
