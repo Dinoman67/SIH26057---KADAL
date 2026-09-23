@@ -8,7 +8,7 @@
 [![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react&logoColor=black)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![ONNX Runtime](https://img.shields.io/badge/ONNX_Runtime-1.16%2B-005CED?logo=onnx&logoColor=white)](https://onnxruntime.ai)
-<[![Hugging Face Model](https://img.shields.io/badge/Hugging%20Face-Model%20(v6)-yellow?logo=huggingface&logoColor=white)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6)
+[![Hugging Face Model](https://img.shields.io/badge/Hugging%20Face-Model%20(v6)-yellow?logo=huggingface&logoColor=white)](https://huggingface.co/Dinoman1221/sonarvision-yolov8-esi-v6)
 [![Hugging Face Dataset](https://img.shields.io/badge/Hugging%20Face-Dataset%20(v6)-blue?logo=huggingface&logoColor=white)](https://huggingface.co/datasets/Dinoman1221/sonarvision-multisource-v6)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Real Data](https://img.shields.io/badge/Real_Data-No_Synthetic_Renders-brightgreen)](#data-provenance-every-pixel-from-real-sonar-zero-synthetic-renders)
@@ -257,7 +257,7 @@ To run live GPU/CPU ONNX tensor inference:
 
 ---
 
-## Team Cold Start
+## Team Innovation Igniters
 
 * Ashish S
 * Sanjeev kumar S
@@ -268,5 +268,5 @@ To run live GPU/CPU ONNX tensor inference:
 
 ---
 
-* Developed for **Smart India Hackathon 2026** by Team **Cold Start**.
+* Developed for **Smart India Hackathon 2026** by Team **Innovation Igniters**.
 * Acoustic data sources: NOAA Hydrographic Survey Archives, NATO STO CMRE MILCO Benchmark, and Kaggle SSS Object Detection.
